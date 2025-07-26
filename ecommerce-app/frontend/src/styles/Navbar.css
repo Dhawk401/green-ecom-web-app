@@ -1,0 +1,108 @@
+/* Navbar styles */
+/* Navbar styles */
+.navbar {
+  background-color: #fff;
+  box-shadow: 0 1px 5px rgba(16, 71, 37, 0.281);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  height: 60px; /* Fixed height */
+  padding: 0; /* Remove vertical padding */
+}
+
+.navbar-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+/* Logo styling */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 50px;  /* keeps it within navbar */
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+
+/* Navigation links */
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  list-style: none;
+}
+
+.navbar-links a {
+  color: #0e351f;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+  color: #e7e6e6;
+  background-color: #0e351f;
+}
+
+/* Icons section */
+.navbar-icons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.navbar-icons a {
+  color: #0e351f;
+  transition: color 0.3s ease;
+}
+
+.navbar-icons a:hover {
+  color: #726f6f;
+}
+
+/* Cart icon & badge */
+.cart-icon-wrapper {
+  position: relative;
+}
+
+.cart-icon {
+  width: 30px;
+  height: auto;
+}
+
+.cart-link {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #2e9729;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  line-height: 1;
+}

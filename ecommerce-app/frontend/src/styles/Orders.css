@@ -1,0 +1,107 @@
+.orders-page {
+  padding: 2rem;
+  background-color: #175023;
+  min-height: 100vh;
+}
+
+.orders-header {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.search-bar {
+  width: 98%;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.orders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.order-items {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0; /* horizontal space between items */
+  row-gap: 1.5rem; /* no vertical space between rows */
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: calc(33.33% - 1rem); /* 3 items per row, adjust as needed */
+  min-width: 200px; /* optional to keep items from shrinking too much */
+}
+
+
+.item-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.item-qty,
+.item-price {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.order-date,
+.order-status,
+.order-total {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.order-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reorder-btn {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.reorder-btn:hover {
+  background-color: #1b5e20;
+}
+
+.rating {
+  font-size: 1.1rem;
+}

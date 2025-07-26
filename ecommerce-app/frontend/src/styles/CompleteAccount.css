@@ -1,0 +1,125 @@
+.edit-account {
+  font-family: 'Segoe UI', sans-serif;
+  max-width: 550px; /* increased from 360px */
+  margin: 0 auto;
+  background-color: white;
+  padding-bottom: 3rem;
+}
+
+.header {
+  background-color: #0e351f;
+  padding: 1.2rem;
+  color: white;
+  border-bottom: 4px solid #f4a300;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  gap: 1rem;
+}
+
+
+.back-btn1 {
+  position: absolute;
+  top: 1.2rem;
+  background: none;
+  border: none;
+  color: rgb(255, 255, 255);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.back-btn1 {
+  left: 1.2rem;
+}
+
+.share-btn {
+  right: 1.2rem;
+}
+
+.profile-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.profile-img {
+  width: 120px; /* increased size */
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid white;
+}
+
+.change-text {
+  margin-top: 0.6rem;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem; /* more spacing */
+  gap: 1.2rem;
+}
+
+.edit-form label {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.edit-form input {
+  padding: 0.8rem 1rem;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 91%;
+}
+
+.update-btn {
+  margin-top: 1.5rem;
+  background-color: #0e351f;
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 98%;
+}
+
+.update-btn:hover {
+  background-color: #359420;
+}
+
+
+.upload-wrapper {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-btn {
+  background-color: #0e351f;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-btn:hover {
+  background-color: #1f6b40;
+}
+
+.upload-input {
+  display: none;
+}
