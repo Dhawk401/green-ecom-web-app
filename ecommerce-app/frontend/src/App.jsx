@@ -19,6 +19,7 @@ import ProductDetail from './pages/ProductDetail';
 import CartBar from './components/CartBar';
 import CompleteAccount from './pages/CompleteAccount';
 import AccountDetails from './pages/AccountDetails';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -26,23 +27,53 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signupform" element={<SignupForm />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/orders" element={<Orders />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/complete-account" element={<CompleteAccount />} />
-        <Route path="/account-details" element={<AccountDetails />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="*" element={<NotFound />} />
+
+        {/* Protected Routes */}
+        <Route path="/shop" element={
+          <PrivateRoute>
+            <Shop />
+          </PrivateRoute>
+        } />
+        <Route path="/cart" element={
+          <PrivateRoute>
+            <Cart />
+          </PrivateRoute>
+        } />
+        <Route path="/checkout" element={
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        } />
+        <Route path="/profile" element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        } />
+        <Route path="/orders" element={
+          <PrivateRoute>
+            <Orders />
+          </PrivateRoute>
+        } />
+        <Route path="/edit-profile" element={
+          <PrivateRoute>
+            <EditProfile />
+          </PrivateRoute>
+        } />
+        <Route path="/account-details" element={
+          <PrivateRoute>
+            <AccountDetails />
+          </PrivateRoute>
+        } />
       </Routes>
-      <CartBar /> 
+      <CartBar />
       <Footer />
     </Router>
   );
