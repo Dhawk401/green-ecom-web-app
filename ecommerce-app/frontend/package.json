@@ -23,5 +23,11 @@
   "scripts": {
     "start": "vite",
     "build": "vite build"
-  }
+  },
+  "description": "",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
 }
