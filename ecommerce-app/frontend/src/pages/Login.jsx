@@ -9,80 +9,49 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { loginUser } = useUser();
   const navigate = useNavigate();
-//this is the real logic for login //----------
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
 
-//     try {
-//       const res = await fetch('http://127.0.0.1:8000/api/login', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Accept: 'application/json',
-//         },
-//         body: JSON.stringify({
-//           email: identifier.trim(),
-//           password: password.trim(),
-//         }),
-//       });
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-//       const data = await res.json();
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          email: identifier.trim(),
+          password: password.trim(),
+        }),
+      });
 
-//       if (!res.ok) {
-//         throw new Error(data.message || 'Login failed');
-//       }
-//       const token = data.access_token;
-//       const user = {
-//         name: data.name,
-//         email: data.email,
-//         bio: data.bio,
-//         profile_picture: data.profile_picture
-// };
+      const data = await res.json();
 
-//       // Store token and user
-//       localStorage.setItem('token', token);
-//       localStorage.setItem('user', JSON.stringify(user));
-
-//       // Update context
-//       loginUser(user);
-
-//       // Navigate
-//       navigate('/profile');
-//     } catch (err) {
-//       alert(err.message);
-//     }
-//   };
-const handleLogin = async (e) => {//temp shit
-  e.preventDefault();
-
-  // Mock credentials
-  const mockEmail = "test@example.com";
-  const mockPassword = "123456";
-
-  if (identifier === mockEmail && password === mockPassword) {
-    const user = {
-      name: "John Doe",
-      email: mockEmail,
-      bio: "Designer at DesignSpace",
-      profile_picture: "https://via.placeholder.com/150"
-    };
-
-    const token = "mocked_jwt_token_123";
-
-    // Save to localStorage
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-
-    // Update context
-    loginUser(user);
-
-    // Navigate
-    navigate('/profile');
-  } else {
-    alert("Invalid email or password");
-  }
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      const token = data.access_token;
+      const user = {
+        name: data.name,
+        email: data.email,
+        bio: data.bio,
+        profile_picture: data.profile_picture
 };
 
+      // Store token and user
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      // Update context
+      loginUser(user);
+
+      // Navigate
+      navigate('/profile');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   return (
     <div className="login-wrapper">

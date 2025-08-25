@@ -1,17 +1,19 @@
 .edit-account {
   font-family: 'Segoe UI', sans-serif;
-  max-width: 550px; /* increased from 360px */
+  max-width: 600px; /* matches wider layout */
   margin: 0 auto;
   background-color: white;
-  padding-bottom: 3rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Header */
 .header {
   background-color: #0e351f;
   padding: 1.2rem;
   color: white;
   border-bottom: 4px solid #f4a300;
-  
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,34 +21,37 @@
   gap: 1rem;
 }
 
-
 .back-btn1 {
   position: absolute;
   top: 1.2rem;
+  left: 1.2rem;
   background: none;
   border: none;
-  color: rgb(255, 255, 255);
+  color: white;
   font-size: 1.4rem;
   cursor: pointer;
 }
 
-.back-btn1 {
-  left: 1.2rem;
-}
-
 .share-btn {
+  position: absolute;
   right: 1.2rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
 }
 
+/* Profile Image */
 .profile-image-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 10px;
 }
 
 .profile-img {
-  width: 120px; /* increased size */
+  width: 120px;
   height: 120px;
   object-fit: cover;
   border-radius: 50%;
@@ -59,10 +64,11 @@
   color: #ffffff;
 }
 
+/* Form */
 .edit-form {
   display: flex;
   flex-direction: column;
-  padding: 2rem; /* more spacing */
+  padding: 2rem;
   gap: 1.2rem;
 }
 
@@ -70,34 +76,26 @@
   font-size: 1rem;
   color: #333;
   margin-bottom: 0.3rem;
+  font-weight: 500;
 }
 
-.edit-form input {
+.edit-form input,
+.edit-form select {
   padding: 0.8rem 1rem;
   font-size: 1.05rem;
   border-radius: 8px;
   border: 1px solid #ccc;
-  width: 91%;
+  width: 100%;
+  transition: border-color 0.2s ease;
 }
 
-.update-btn {
-  margin-top: 1.5rem;
-  background-color: #0e351f;
-  color: white;
-  padding: 1rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  width: 98%;
+.edit-form input:focus,
+.edit-form select:focus {
+  outline: none;
+  border-color: #0e351f;
 }
 
-.update-btn:hover {
-  background-color: #359420;
-}
-
-
+/* Upload Button */
 .upload-wrapper {
   margin-top: 0.8rem;
   display: flex;
@@ -122,4 +120,44 @@
 
 .upload-input {
   display: none;
+}
+
+/* Buttons */
+.update-btn {
+  margin-top: 1.5rem;
+  background-color: #0e351f;
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.update-btn:hover {
+  background-color: #359420;
+}
+
+/* Step Navigation Buttons */
+.step-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.step-buttons button {
+  flex: 1;
+  margin: 0 0.5rem;
+}
+
+/* Hide steps */
+.step {
+  display: none;
+}
+
+.step.active {
+  display: block;
 }

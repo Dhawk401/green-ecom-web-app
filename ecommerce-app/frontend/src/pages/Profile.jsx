@@ -11,91 +11,51 @@ const Profile = () => {
   const { user, logoutUser, loginUser } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [useFakeBackend, setUseFakeBackend] = useState(true); // ✅ toggle state
 
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-    if (!token && !useFakeBackend) {
-      // If using real backend and no token → redirect
+    // 🔒 Redirect to login if no token
+    if (!token) {
       logoutUser();
       navigate('/login');
       return;
     }
 
-    const loadProfile = async () => {
-      if (useFakeBackend) {
-        // ✅ FAKE BACKEND MODE
-        if (!token) {
-          const dummyUser = { name: 'Demo User', email: 'demo@example.com', isAccountComplete: true };
-          loginUser(dummyUser.name, dummyUser.email);
-          localStorage.setItem('user', JSON.stringify(dummyUser));
-          localStorage.setItem('token', 'dummy-token');
-        } else {
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            loginUser(parsedUser.name, parsedUser.email);
-          } else {
-            const dummyUser = { name: 'Demo User', email: 'demo@example.com', isAccountComplete: true };
-            loginUser(dummyUser.name, dummyUser.email);
-            localStorage.setItem('user', JSON.stringify(dummyUser));
-          }
-        }
-        setLoading(false);
-      } else {
-        // ✅ REAL BACKEND MODE
-        try {
-          const res = await fetch('http://127.0.0.1:8000/api/profile', {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/profile', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
-          if (res.ok) {
-            const data = await res.json();
-            loginUser(data.name, data.email);
-          } else {
-            logoutUser();
-            localStorage.removeItem('token');
-            navigate('/login');
-          }
-        } catch (err) {
-          console.error('Failed to fetch profile:', err);
+        if (res.ok) {
+          const data = await res.json();
+          loginUser(data.name, data.email); // sync context
+        } else {
           logoutUser();
+          localStorage.removeItem('token');
           navigate('/login');
-        } finally {
-          setLoading(false);
         }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+        logoutUser();
+        navigate('/login');
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadProfile();
-  }, [useFakeBackend, loginUser, logoutUser, navigate]);
+    fetchProfile();
+  }, [logoutUser, loginUser, navigate]);
 
   if (loading || !user) return <p>Loading profile...</p>;
 
   return (
     <div className="modern-profile-wrapper">
-      {/* ✅ Toggle Button */}
-      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-        <button
-          onClick={() => setUseFakeBackend(prev => !prev)}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: useFakeBackend ? '#4caf50' : '#2196f3',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          {useFakeBackend ? 'Switch to Real Backend' : 'Switch to Fake Backend'}
-        </button>
-      </div>
-
       <div className="modern-profile-card">
         <div className="profile-top">
           <img
@@ -150,12 +110,22 @@ const Profile = () => {
         <div
           className="profile-option logout"
           onClick={() => {
+  // Clear user context
             logoutUser();
+
+           // Remove auth token
             localStorage.removeItem('token');
-            localStorage.removeItem('cart');
+
+             // Clear other app state (like cart)
+            localStorage.removeItem('cart'); // ⬅️ Add more keys if needed
+
+            //removing users too
             localStorage.removeItem('user');
+
+            // Force full page reload to clear all components/state
             window.location.href = '/';
           }}
+
         >
           <div className="left">
             <FiLogOut className="icon" />

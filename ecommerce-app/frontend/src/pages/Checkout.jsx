@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/CartContext'; // assuming this is set up
-import '../styles/Checkout.css'; // assuming you have a CSS file for styles
+import { useCart } from '../context/CartContext';
+import { useOrders } from '../context/OrdersContext';
+import { useNavigate } from 'react-router-dom';
+import '../styles/Checkout.css';
 
 const Checkout = () => {
-  const { cartItems } = useCart();
+  const { cartItems, clearCart } = useCart();
+  const { addOrder } = useOrders();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -36,78 +41,100 @@ const Checkout = () => {
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.price); // remove /kg etc. if needed
-      return total + (price * item.quantity);
-    }, 0).toFixed(2);
+    return cartItems
+      .reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+      .toFixed(2);
   };
 
-  const handleSubmit = (e) => {
+  const handlePlaceOrder = (e) => {
     e.preventDefault();
-    alert(`Order placed successfully via ${formData.paymentMethod}, ${formData.firstName}!`);
+
+    if (cartItems.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
+    const newOrder = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      status: "Confirmed",
+      total: `₹${calculateTotal()}`,
+      items: cartItems
+    };
+
+    // ✅ Save order
+    addOrder(newOrder);
+
+    // ✅ Store newest order ID in sessionStorage (edit button will only appear for this order in this session)
+    sessionStorage.setItem("justPlacedOrderId", newOrder.id);
+
+    // ✅ Clear cart
+    clearCart();
+
+    // ✅ Redirect to orders page
+    navigate("/orders");
   };
 
   return (
-    <div className="checkout-container">
-      <form className="checkout-form" onSubmit={step === 1 ? handleNext : handleSubmit}>
-        {/* LEFT COLUMN */}
-        <div className="checkout-left">
-          {/* Billing Address */}
-          <div className="checkout-section">
-            <h3>Billing Address</h3>
-            <div className="row">
-              <input name="firstName" placeholder="First Name" value={formData.firstName} required onChange={handleChange} />
-              <input name="lastName" placeholder="Last Name" value={formData.lastName} required onChange={handleChange} />
-            </div>
-            <input name="email" placeholder="Email Address" value={formData.email} required onChange={handleChange} />
-            <input name="address" placeholder="Street Address" value={formData.address} required onChange={handleChange} />
-            <div className="row">
-              <input name="state" placeholder="State/Province" value={formData.state} required onChange={handleChange} />
-              <input name="city" placeholder="City" value={formData.city} required onChange={handleChange} />
-            </div>
-            <div className="row">
-              <input name="zip" placeholder="Zip/Postal Code" value={formData.zip} required onChange={handleChange} />
-              <input name="phone" placeholder="Phone" value={formData.phone} required onChange={handleChange} />
-            </div>
-          </div>
+    <div className="checkout-page">
+      <div className="checkout-container single-column">
+        <form
+          className="checkout-form"
+          onSubmit={step === 1 ? handleNext : handlePlaceOrder}
+        >
+          {/* Step 1: Billing & Payment */}
+          {step === 1 && (
+            <div className="checkout-step">
+              <h3>Billing Address</h3>
+              <div className="row">
+                <input name="firstName" placeholder="First Name" value={formData.firstName} required onChange={handleChange} />
+                <input name="lastName" placeholder="Last Name" value={formData.lastName} required onChange={handleChange} />
+              </div>
+              <input name="email" placeholder="Email Address" value={formData.email} required onChange={handleChange} />
+              <input name="address" placeholder="Street Address" value={formData.address} required onChange={handleChange} />
+              <div className="row">
+                <input name="state" placeholder="State/Province" value={formData.state} required onChange={handleChange} />
+                <input name="city" placeholder="City" value={formData.city} required onChange={handleChange} />
+              </div>
+              <div className="row">
+                <input name="zip" placeholder="Zip/Postal Code" value={formData.zip} required onChange={handleChange} />
+                <input name="phone" placeholder="Phone" value={formData.phone} required onChange={handleChange} />
+              </div>
 
-          {/* Payment Method */}
-         <h3>Payment Method</h3>
-            <div className="payment-options">
-              <label className={`payment-card ${formData.paymentMethod === 'gpay' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="gpay"
-                  checked={formData.paymentMethod === 'gpay'}
-                  onChange={handleChange}
-                />
-                <div className="payment-icon">💳</div>
-                <span>Google Pay</span>
-              </label>
+              <h3>Payment Method</h3>
+              <div className="payment-options">
+                <label className={`payment-card ${formData.paymentMethod === 'gpay' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="gpay"
+                    checked={formData.paymentMethod === 'gpay'}
+                    onChange={handleChange}
+                  />
+                  <div className="payment-icon">💳</div>
+                  <span>Google Pay</span>
+                </label>
 
-              <label className={`payment-card ${formData.paymentMethod === 'cod' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="cod"
-                  checked={formData.paymentMethod === 'cod'}
-                  onChange={handleChange}
-                />
-                <div className="payment-icon">💵</div>
-                <span>Cash on Delivery</span>
-              </label>
+                <label className={`payment-card ${formData.paymentMethod === 'cod' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={formData.paymentMethod === 'cod'}
+                    onChange={handleChange}
+                  />
+                  <div className="payment-icon">💵</div>
+                  <span>Cash on Delivery</span>
+                </label>
+              </div>
+
+              <button type="submit" className="pay-button">Continue to Review</button>
             </div>
+          )}
 
-          <button type="submit" className="pay-button">
-            {step === 1 ? 'Continue to Review' : 'Place Order'}
-          </button>
-        </div>
-
-        {/* RIGHT COLUMN: Order Summary (only if step === 2) */}
-        {step === 2 && (
-          <div className="checkout-right">
-            <div className="summary-card">
+          {/* Step 2: Order Review */}
+          {step === 2 && (
+            <div className="checkout-step">
               <h3>Order Review</h3>
               <ul className="cart-summary-list">
                 {cartItems.length > 0 ? (
@@ -126,15 +153,19 @@ const Checkout = () => {
               </ul>
 
               <h3>Total: ₹{calculateTotal()}</h3>
-
               <textarea placeholder="Order comments..." rows="3"></textarea>
               <label className="confirm-label">
                 <input type="checkbox" required /> I agree to Privacy & Terms
               </label>
+
+              <div className="review-buttons">
+                <button type="button" onClick={() => setStep(1)}>Back</button>
+                <button type="submit" className="pay-button">Place Order</button>
+              </div>
             </div>
-          </div>
-        )}
-      </form>
+          )}
+        </form>
+      </div>
     </div>
   );
 };
