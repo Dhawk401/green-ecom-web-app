@@ -1,8 +1,8 @@
 .edit-profile-wrapper {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 80vh;
+  align-items: flex-start;
+  min-height: 90vh;
   background-color: #f4f4f4;
   padding: 2rem;
 }
@@ -10,52 +10,111 @@
 .edit-profile-form {
   background: #fff;
   padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  max-width: 400px;
+  border-radius: 14px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+  max-width: 440px;
   width: 100%;
 }
 
 .edit-profile-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   margin-bottom: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   color: #0e351f;
   text-align: center;
+  letter-spacing: 0.3px;
+}
+
+/* Profile image block */
+.profile-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0.25rem 0 1.25rem;
+}
+
+.profile-img {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-wrapper {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-btn {
+  background-color: #0e351f;
+  color: #fff;
+  padding: 0.55rem 1.05rem;
+  font-size: 0.95rem;
+  font-weight: 200;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.upload-btn:hover {
+  background-color: #145c33;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(14, 53, 31, 0.18);
 }
 
 .edit-profile-input {
-  width: 95%;
-  padding: 0.75rem;
+  width: 93%;
+  padding: 0.85rem 1rem;
   margin-bottom: 1rem;
   border: 1px solid #92b198;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
+  background: #fbfdfc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.edit-profile-input1{
-  width: 101.5%;
-  padding: 0.75rem;
+.edit-profile-input1 {
+  width: 100%;
+  padding: 0.85rem 1rem;
   margin-bottom: 1rem;
   border: 1px solid #92b198;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
+  background: #fbfdfc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-profile-input:focus,
+.edit-profile-input1:focus {
+  outline: none;
+  border-color: #0e351f;
+  box-shadow: 0 0 0 3px rgba(14, 53, 31, 0.12);
 }
 
 .edit-profile-button {
-  width: 101.5%;
-  padding: 0.75rem;
+  width: 100%;
+  padding: 0.85rem;
   background-color: #0e351f;
   color: white;
   border: none;
-  font-weight: 600;
-  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
 }
 
 .edit-profile-button:hover {
   background-color: #1d4d23;
+  transform: translateY(-2px);
 }
 
 .back-btn {
@@ -65,4 +124,36 @@
   margin-bottom: 1rem;
   cursor: pointer;
   color: #333;
+}
+
+/* 🔹 Wholesale Business Section */
+.wholesale-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px dashed #b6c7b9;
+  border-radius: 12px;
+  background: #f9faf9;
+}
+
+.wholesale-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0e351f;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* 🔒 Disabled inputs for wholesale business */
+.edit-profile-input.disabled {
+  background-color: #f0f0f0;
+  color: #666;
+  border: 1px solid #ccc;
+  cursor: not-allowed;
 }

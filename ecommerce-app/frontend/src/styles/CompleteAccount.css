@@ -1,17 +1,23 @@
 .edit-account {
   font-family: 'Segoe UI', sans-serif;
-  max-width: 600px; /* matches wider layout */
-  margin: 0 auto;
-  background-color: white;
-  border-radius: 12px;
+  max-width: 680px; /* a bit wider for 2-col rows */
+  margin: 24px auto;
+  background-color: #fff;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+/* Global safety for this component */
+.edit-account, .edit-account * {
+  box-sizing: border-box;
+  min-width: 0; /* prevent grid children from overflowing */
 }
 
 /* Header */
 .header {
   background-color: #0e351f;
-  padding: 1.2rem;
+  padding: 1.1rem 1.25rem;
   color: white;
   border-bottom: 4px solid #f4a300;
   display: flex;
@@ -20,26 +26,62 @@
   position: relative;
   gap: 1rem;
 }
-
+.header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
 .back-btn1 {
   position: absolute;
-  top: 1.2rem;
-  left: 1.2rem;
+  left: 1rem;
   background: none;
   border: none;
   color: white;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   cursor: pointer;
 }
 
-.share-btn {
-  position: absolute;
-  right: 1.2rem;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.4rem;
-  cursor: pointer;
+/* Step Indicator */
+.ca-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px 0;
+}
+.ca-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 64px;
+}
+.ca-step-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e6eee9;
+  color: #355a45;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+.ca-step.active .ca-step-number {
+  background: #0e351f;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(14, 53, 31, 0.15);
+}
+.ca-step-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #355a45;
+}
+.ca-step-line {
+  width: 42px;
+  height: 2px;
+  background: #cfd8d3;
 }
 
 /* Profile Image */
@@ -47,117 +89,187 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 10px;
+  padding-top: 10px;
 }
-
 .profile-img {
   width: 120px;
   height: 120px;
   object-fit: cover;
   border-radius: 50%;
   border: 4px solid white;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
-
-.change-text {
-  margin-top: 0.6rem;
-  font-size: 1rem;
-  color: #ffffff;
-}
-
-/* Form */
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  gap: 1.2rem;
-}
-
-.edit-form label {
-  font-size: 1rem;
-  color: #333;
-  margin-bottom: 0.3rem;
-  font-weight: 500;
-}
-
-.edit-form input,
-.edit-form select {
-  padding: 0.8rem 1rem;
-  font-size: 1.05rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 100%;
-  transition: border-color 0.2s ease;
-}
-
-.edit-form input:focus,
-.edit-form select:focus {
-  outline: none;
-  border-color: #0e351f;
-}
-
-/* Upload Button */
 .upload-wrapper {
   margin-top: 0.8rem;
   display: flex;
   justify-content: center;
 }
-
 .upload-btn {
   background-color: #0e351f;
   color: #fff;
-  padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 800;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
-
 .upload-btn:hover {
-  background-color: #1f6b40;
+  background-color: #145c33;
+  transform: translateY(-1px);
+}
+.upload-input { display: none; }
+
+/* Form */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  padding: 1.4rem;
+  gap: 1rem;
+}
+.edit-form label {
+  display: block; /* ensure it sits above the input */
+  font-size: 0.95rem;
+  color: #2a3a31;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+.edit-form input,
+.edit-form select {
+  display: block;        /* avoid inline collision */
+  width: 100%;           /* fill column */
+  padding: 0.85rem 0.95rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #d8dfdb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #fbfdfc;
+}
+.edit-form input:focus,
+.edit-form select:focus {
+  outline: none;
+  border-color: #0e351f;
+  box-shadow: 0 0 0 3px rgba(14,53,31,0.12);
 }
 
-.upload-input {
-  display: none;
+/* Row / Col layout — FORCE grid even if a global .row exists */
+.edit-account .row {
+  display: grid !important;             /* override any framework .row */
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.edit-account .col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* critical for grid children to not overflow */
 }
 
 /* Buttons */
 .update-btn {
-  margin-top: 1.5rem;
+  margin-top: 0.25rem;
   background-color: #0e351f;
   color: white;
-  padding: 1rem;
+  padding: 0.9rem 1.1rem;
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 900;
   cursor: pointer;
   width: 100%;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
-
 .update-btn:hover {
-  background-color: #359420;
+  background-color: #145c33;
+  transform: translateY(-1px);
 }
 
-/* Step Navigation Buttons */
 .step-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
+  gap: 12px;
+  margin-top: 0.25rem;
 }
 
-.step-buttons button {
-  flex: 1;
-  margin: 0 0.5rem;
+/* Hide steps (kept for compatibility) */
+.step { display: none; }
+.step.active { display: block; }
+
+/* Responsive */
+@media (max-width: 740px) {
+  .edit-account .row { grid-template-columns: 1fr; }
+  .edit-account { margin: 12px auto; }
 }
 
-/* Hide steps */
-.step {
-  display: none;
+/* ==== Retail / Wholesale Toggle ==== */
+.user-type-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 1rem 0 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.step.active {
-  display: block;
+.user-type-toggle span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #555;
+  transition: color 0.25s ease;
+}
+
+.user-type-toggle span.active {
+  color: #0e351f;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+.switch input:checked + .slider {
+  background-color: #0e351f;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Round style */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

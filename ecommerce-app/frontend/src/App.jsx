@@ -20,6 +20,11 @@ import CartBar from './components/CartBar';
 import CompleteAccount from './pages/CompleteAccount';
 import AccountDetails from './pages/AccountDetails';
 import PrivateRoute from './components/PrivateRoute';
+import Wallet from './components/Wallet'; // ✅ import wallet component
+import CheckoutWholesale from './pages/CheckoutWholesale';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Help from './pages/Help';
 
 function App() {
   return (
@@ -35,6 +40,11 @@ function App() {
         <Route path="/complete-account" element={<CompleteAccount />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/checkout-wholesale" element={<CheckoutWholesale />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/help" element={<Help />} />
 
         {/* Protected Routes */}
         <Route path="/shop" element={

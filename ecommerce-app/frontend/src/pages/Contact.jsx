@@ -12,7 +12,7 @@ const Contact = () => {
         <button className="contact-button">Send Message</button>
       </form>
       <div className="contact-info">
-        <p><strong>Email:</strong> support@gromania.in</p>
+        <p><strong>Email:</strong> support@greensure.in</p>
         <p><strong>Phone:</strong> +91-9876543210</p>
         <p><strong>Address:</strong> Mumbai, India</p>
       </div>

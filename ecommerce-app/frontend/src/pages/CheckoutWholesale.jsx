@@ -4,7 +4,7 @@ import { useOrders } from "../context/OrdersContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/Checkout.css";
 
-const Checkout = () => {
+const CheckoutWholesale = () => {
   const { cartItems, clearCart } = useCart();
   const { addOrder } = useOrders();
   const navigate = useNavigate();
@@ -21,19 +21,26 @@ const Checkout = () => {
     phone: "",
   });
 
+  // "delivery" | "takeaway" from Cart via state (kept same as retail)
   const [checkoutMode, setCheckoutMode] = useState("delivery");
   const [deliveryError, setDeliveryError] = useState("");
   const [step, setStep] = useState(1);
 
-  // Payment method state
-  const [paymentMethod, setPaymentMethod] = useState("gpay");
+  // Wholesale extras
+  const [paymentMethod, setPaymentMethod] = useState("upi"); // step 3 (4 options)
+  const [paymentTiming, setPaymentTiming] = useState("now"); // step 4: "now" | "later"
+
+  // pick up orderType & userType from Cart (if passed)
+  const [userType, setUserType] = useState(
+    () => location.state?.userType || "wholesale"
+  );
 
   useEffect(() => {
-    if (location.state?.orderType) {
-      setCheckoutMode(location.state.orderType);
-    }
+    if (location.state?.orderType) setCheckoutMode(location.state.orderType);
+    if (location.state?.userType) setUserType(location.state.userType);
   }, [location.state]);
 
+  // keep same mock delivery validation as retail (only enforced if mode is delivery)
   const deliveryZipCodes = ["403001", "403002", "403003"];
 
   const handleChange = (e) => {
@@ -52,6 +59,7 @@ const Checkout = () => {
     }
   };
 
+  // validation mirrors retail
   const isFormValid = () => {
     if (checkoutMode === "delivery") {
       return (
@@ -74,45 +82,44 @@ const Checkout = () => {
     );
   };
 
+  // number helpers (same as retail)
   const toNumber = (v) => {
     const n = parseFloat(v);
     return Number.isFinite(n) ? n : 0;
   };
-
   const lineSubtotal = (item) => toNumber(item.price) * (item.quantity || 0);
-
   const calculateTotal = () =>
-    cartItems
-      .reduce((sum, item) => sum + lineSubtotal(item), 0)
-      .toFixed(2);
+    cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0).toFixed(2);
 
-  const handleNext = (e) => {
-    e.preventDefault();
-    if (step === 1 && isFormValid()) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    }
+  // navigation across steps
+  const goNext = (e) => {
+    e?.preventDefault?.();
+    if (step === 1 && !isFormValid()) return;
+    setStep((s) => Math.min(s + 1, 4));
   };
+  const goBack = () => setStep((s) => Math.max(s - 1, 1));
 
+  // place order
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) {
-      alert("Your cart is empty!");
-      return;
+        alert("Your cart is empty!");
+        return;
     }
 
     const newOrder = {
-      id: Date.now(),
-      timestamp: Date.now(),                 // ✅ precise time for the timer
-      date: new Date().toLocaleString(),     // readable
-      status: "Confirmed",
-      mode: checkoutMode,
-      total: `₹${calculateTotal()}`,
-      items: cartItems,
-      customer: formData,
-      // Only include payment if you actually have paymentMethod state in this file:
-      ...(typeof paymentMethod !== "undefined" ? { payment: paymentMethod } : {}),
-      // DO NOT include userType here unless you defined it in this file
+        id: Date.now(),
+        timestamp: Date.now(),                 // ✅ precise time for the timer
+        date: new Date().toLocaleString(),
+        status: "Confirmed",
+        mode: checkoutMode,
+        total: `₹${calculateTotal()}`,
+        items: cartItems,
+        customer: formData,
+        userType: (userType || "wholesale"),
+        payment: {
+        method: paymentMethod,               // "upi" | "card" | "netbanking" | "banktransfer" | "cod" | "cash" | "cheque"
+        timing: paymentTiming,               // "now" | "later"
+        },
     };
 
     addOrder(newOrder);
@@ -120,30 +127,36 @@ const Checkout = () => {
     sessionStorage.setItem("justPlacedOrderMode", newOrder.mode);
     clearCart();
     navigate("/orders");
-  };
+    };
 
 
   return (
     <div className="checkout-page">
-      <h2>Checkout</h2>
+      <h2>Checkout (Wholesale)</h2>
+
+      {/* Stepper (1–4) */}
       <div className="step-indicator">
-        <div className={`step ${step === 1 ? "active" : ""}`}>
+        <div className={`step ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
           <span className="step-number">1</span>
           <span className="step-label">Details</span>
         </div>
-        <div className={`step ${step === 2 ? "active" : ""}`}>
+        <div className={`step ${step > 2 ? "completed" : step === 2 ? "active" : ""}`}>
           <span className="step-number">2</span>
           <span className="step-label">Review</span>
         </div>
-        <div className={`step ${step === 3 ? "active" : ""}`}>
+        <div className={`step ${step > 3 ? "completed" : step === 3 ? "active" : ""}`}>
           <span className="step-number">3</span>
           <span className="step-label">Payment</span>
         </div>
+        <div className={`step ${step === 4 ? "active" : ""}`}>
+          <span className="step-number">4</span>
+          <span className="step-label">Pay Now/Later</span>
+        </div>
       </div>
 
-      {/* Step 1: Customer Details */}
+      {/* STEP 1: Details */}
       {step === 1 && (
-        <form className="checkout-form" onSubmit={handleNext}>
+        <form className="checkout-form" onSubmit={goNext}>
           <div className="row">
             <input
               name="firstName"
@@ -224,7 +237,7 @@ const Checkout = () => {
         </form>
       )}
 
-      {/* Step 2: Order Summary */}
+      {/* STEP 2: Review */}
       {step === 2 && (
         <div className="order-summary">
           <h3>Order Summary</h3>
@@ -247,89 +260,138 @@ const Checkout = () => {
             })}
           </ul>
 
-          <p className="total-amount">
-            Total: <strong>₹{calculateTotal()}</strong>
+          <p className="total-amount" style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>User: <span className="badge-user-type">{(userType || "wholesale").toUpperCase()}</span></span>
+            <span>Total: <strong>₹{calculateTotal()}</strong></span>
           </p>
 
           <div className="customer-details">
             <h4>Customer Details</h4>
-            <p>
-              {formData.firstName} {formData.lastName}
-            </p>
+            <p>{formData.firstName} {formData.lastName}</p>
             <p>{formData.email}</p>
             <p>{formData.phone}</p>
             {checkoutMode === "delivery" ? (
               <>
                 <p>{formData.address}</p>
-                <p>
-                  {formData.city}, {formData.state}, {formData.zip}
-                </p>
+                <p>{formData.city}, {formData.state}, {formData.zip}</p>
               </>
             ) : (
-              <p>
-                <em>Takeaway order</em>
-              </p>
+              <p><em>Takeaway order</em></p>
             )}
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={() => setStep(1)}>
-              Back
-            </button>
-            <button className="next-button" onClick={() => setStep(3)}>
-              Proceed to Payment
-            </button>
+            <button type="button" onClick={goBack}>Back</button>
+            <button className="next-button" onClick={goNext}>Proceed to Payment</button>
           </div>
         </div>
       )}
 
-      {/* Step 3: Payment Method */}
+      {/* STEP 3: Payment Method (4 options) */}
       {step === 3 && (
         <div className="checkout-section">
           <h3>Select Payment Method</h3>
-          <div className="payment-options">
-            <label
-              className={`payment-card ${paymentMethod === "gpay" ? "selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value="gpay"
-                checked={paymentMethod === "gpay"}
-                onChange={() => setPaymentMethod("gpay")}
-              />
-              <div className="payment-icon">💳</div>
-              <span>Google Pay</span>
-            </label>
 
-            <label
-              className={`payment-card ${paymentMethod === "cod" ? "selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value="cod"
-                checked={paymentMethod === "cod"}
-                onChange={() => setPaymentMethod("cod")}
-              />
-              <div className="payment-icon">💵</div>
-              <span>Cash on Delivery</span>
-            </label>
-          </div>
-            
-          <p className="total-amount" style={{ textAlign: "left", marginTop: "0" }}>
+          <p className="total-amount" style={{ marginTop: 0 }}>
             Total: <strong>₹{calculateTotal()}</strong>
           </p>
 
-          <div className="customer-details" style={{ marginTop: "1rem" }}>
-            <h4>Payment</h4>
-            <p>Method: {paymentMethod === "gpay" ? "Google Pay" : "Cash on Delivery"}</p>
+          <div className="payment-options">
+        {/* Cash */}
+        <label className={`payment-card ${paymentMethod === "cash" ? "selected" : ""}`}>
+            <input
+            type="radio"
+            name="payment"
+            value="cash"
+            checked={paymentMethod === "cash"}
+            onChange={() => setPaymentMethod("cash")}
+            />
+            <div className="payment-icon">💵</div>
+            <span>Cash</span>
+        </label>
+
+        {/* GPay / UPI */}
+        <label className={`payment-card ${paymentMethod === "upi" ? "selected" : ""}`}>
+            <input
+            type="radio"
+            name="payment"
+            value="upi"
+            checked={paymentMethod === "upi"}
+            onChange={() => setPaymentMethod("upi")}
+            />
+            <div className="payment-icon">📱</div>
+            <span>GPay / UPI</span>
+        </label>
+
+        {/* Bank Transfer */}
+        <label className={`payment-card ${paymentMethod === "banktransfer" ? "selected" : ""}`}>
+            <input
+            type="radio"
+            name="payment"
+            value="banktransfer"
+            checked={paymentMethod === "banktransfer"}
+            onChange={() => setPaymentMethod("banktransfer")}
+            />
+            <div className="payment-icon">🏦</div>
+            <span>Bank Transfer</span>
+        </label>
+
+        {/* Cheque */}
+        <label className={`payment-card ${paymentMethod === "cheque" ? "selected" : ""}`}>
+            <input
+            type="radio"
+            name="payment"
+            value="cheque"
+            checked={paymentMethod === "cheque"}
+            onChange={() => setPaymentMethod("cheque")}
+            />
+            <div className="payment-icon">✒️</div>
+            <span>Cheque</span>
+        </label>
+        </div>
+
+          <div className="review-buttons">
+            <button type="button" onClick={goBack}>Back</button>
+            <button className="next-button" onClick={goNext}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 4: Pay Now or Pay Later */}
+      {step === 4 && (
+        <div className="checkout-section">
+          <h3>When would you like to pay?</h3>
+
+          <div className="timing-options">
+            <label className={`timing-card ${paymentTiming === "now" ? "selected" : ""}`}>
+              <input
+                type="radio"
+                name="timing"
+                value="now"
+                checked={paymentTiming === "now"}
+                onChange={() => setPaymentTiming("now")}
+              />
+              <div className="timing-icon">⚡</div>
+              <span>Pay Now</span>
+              <small>Complete payment during checkout</small>
+            </label>
+
+            <label className={`timing-card ${paymentTiming === "later" ? "selected" : ""}`}>
+              <input
+                type="radio"
+                name="timing"
+                value="later"
+                checked={paymentTiming === "later"}
+                onChange={() => setPaymentTiming("later")}
+              />
+              <div className="timing-icon">⏳</div>
+              <span>Pay Later</span>
+              <small>We’ll follow up with payment instructions</small>
+            </label>
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={() => setStep(2)}>
-              Back
-            </button>
+            <button type="button" onClick={goBack}>Back</button>
             <button className="pay-button" onClick={handlePlaceOrder}>
               Place Order
             </button>
@@ -340,4 +402,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default CheckoutWholesale;

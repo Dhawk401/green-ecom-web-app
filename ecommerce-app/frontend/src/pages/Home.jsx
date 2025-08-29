@@ -11,7 +11,6 @@ const Home = () => {
     <div className="home-wrapper">
       <HeroSlider />
       <ProductGrid title="Trending Products" limit={8} />
-      <ComboSection />
       <TestimonialSlider />
       <NewsletterSubscribe />
     </div>
