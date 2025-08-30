@@ -1,13 +1,19 @@
-.profile-avatar {
-  height: 40px;  /* keeps it within navbar */
-  width: auto;
-  object-fit: contain;
-  display: block;
-  margin-top: 5px;
+/* ===== Navbar Avatar ===== */
+.navbar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
-.profile-image {
-  height: 70%;
-  width: 70%;
+
+.navbar-avatar-image {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.navbar-avatar-image:hover {
+  transform: scale(1.05);
 }

@@ -1,64 +1,86 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import '../styles/Navbar.css';
-import { useCart } from '../context/CartContext';
-import { useUser } from '../context/UserContext';
-import { FaShoppingCart } from 'react-icons/fa';
+import React, { useState, useRef, useEffect } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import "../styles/Navbar.css";
+import { useCart } from "../context/CartContext";
+import { useUser } from "../context/UserContext";
+import { FaShoppingCart } from "react-icons/fa";
+import ProfileAvatar from "./ProfileAvatar";
 
 const Navbar = () => {
   const { cartCount } = useCart();
   const { user, logoutUser } = useUser();
-  const [hover, setHover] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);   // 🔹 reference for dropdown container
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logoutUser();
     localStorage.removeItem("token");
     localStorage.removeItem("cart");
     localStorage.removeItem("user");
-    navigate("/login");
+    setDropdownOpen(false);
+    navigate("/");
   };
+
+  const isProfilePage = location.pathname === "/profile";
+
+  // 🔹 Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="navbar">
       <div className="navbar-container">
-        {/* Logo */}
         <NavLink to="/" className="navbar-logo">
           <img src="/assets/image.png" alt="GreenSure Logo" className="logo-img" />
         </NavLink>
 
-        {/* Links */}
         <nav className="navbar-links">
-          <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>Home</NavLink>
-          <NavLink to="/shop" className={({ isActive }) => (isActive ? 'active' : '')}>Shop</NavLink>
-          <NavLink to="/about" className={({ isActive }) => (isActive ? 'active' : '')}>About</NavLink>
-          <NavLink to="/contact" className={({ isActive }) => (isActive ? 'active' : '')}>Contact</NavLink>
+          <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>Home</NavLink>
+          <NavLink to="/shop" className={({ isActive }) => (isActive ? "active" : "")}>Shop</NavLink>
+          <NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>About</NavLink>
+          <NavLink to="/contact" className={({ isActive }) => (isActive ? "active" : "")}>Contact</NavLink>
         </nav>
 
-        {/* Cart + Profile */}
         <div className="navbar-icons">
           <NavLink to="/cart" className="cart-link">
             <FaShoppingCart />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </NavLink>
 
-          {user ? (
-            <div 
-              className="profile-container"
-              onMouseEnter={() => setHover(true)}
-              onMouseLeave={() => setHover(false)}
-            >
-              <img src="/assets/cat-sweetcorn.jpg" alt="Profile" className="profile-avatar" />
-              {hover && (
-                <div className="logout-dropdown" onClick={handleLogout}>
-                  Logout
+          {user && !isProfilePage ? (
+            <div className="profile-dropdown-container" ref={dropdownRef}>
+              <div onClick={() => setDropdownOpen((prev) => !prev)}>
+                <ProfileAvatar />
+              </div>
+              {dropdownOpen && (
+                <div className="profile-dropdown">
+                  <button
+                    onClick={() => {
+                      navigate("/profile");
+                      setDropdownOpen(false); // close after navigating
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button onClick={handleLogout}>Logout</button>
                 </div>
               )}
             </div>
           ) : (
-            <NavLink to="/login" className={({ isActive }) => (isActive ? 'active' : '')}>
-              LOG IN
-            </NavLink>
+            !user && (
+              <NavLink to="/login" className={({ isActive }) => (isActive ? "active" : "")}>
+                LOG IN
+              </NavLink>
+            )
           )}
         </div>
       </div>
