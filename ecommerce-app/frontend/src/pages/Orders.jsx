@@ -4,6 +4,7 @@ import { useOrders } from "../context/OrdersContext";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 
+
 // ⭐ Star component
 const Star = ({ filled, onClick }) => (
   <span
@@ -26,13 +27,133 @@ const Orders = () => {
 
   const [timeLeft, setTimeLeft] = useState(0);
 
-  // ---- Payment proof modal state ----
-  const [showProofModal, setShowProofModal] = useState(false);
-  const [activeOrderForProof, setActiveOrderForProof] = useState(null);
-  const [proofPreview, setProofPreview] = useState("");
-  const [proofFile, setProofFile] = useState(null);
+  const products = [
+    {
+      _id: '1',
+      name: 'Tomato',
+      image: '/assets/cat-tomato.jpg',
+      price: '30/kg',
+      category: 'vegetable',
+    },
+    {
+      _id: '2',
+      name: 'Potato',
+      image: '/assets/cat-potato.jpg',
+      price: '25/kg',
+      category: 'vegetable',
+    },
+    {
+      _id: '3',
+      name: 'Onion',
+      image: '/assets/cat-onion.jpg',
+      price: '40/kg',
+      category: 'vegetable',
+    },
+    {
+      _id: '4',
+      name: 'Cabbage',
+      image: '/assets/cat-cabbage.jpg',
+      price: '30/kg',
+      category: 'vegetable',
+    },
+    {
+      _id: '5',
+      name: 'Broccoli',
+      image: '/assets/cat-broccoli.jpg',
+      price: '60/kg',
+      category: 'exotic',
+    },
+    {
+      _id: '6',
+      name: 'Zucchini',
+      image: '/assets/cat-zucchini.jpg',
+      price: '70/kg',
+      category: 'exotic',
+    },
+    {
+      _id: '7',
+      name: 'Bell Pepper (Red)',
+      image: '/assets/cat-bellpepper-red.jpg',
+      price: '90/kg',
+      category: 'exotic',
+    },
+    {
+      _id: '8',
+      name: 'Bell Pepper (Yellow)',
+      image: '/assets/cat-bellpepper-yellow.jpg',
+      price: '90/kg',
+      category: 'exotic',
+    },
+    {
+      _id: '9',
+      name: 'Asparagus',
+      image: '/assets/cat-asparagus.jpg',
+      price: '150/bunch',
+      category: 'exotic',
+    },
+    {
+      _id: '10',
+      name: 'Avocado',
+      image: '/assets/cat-avocado.jpg',
+      price: '120/piece',
+      category: 'exotic',
+    },
+    {
+      _id: '11',
+      name: 'Lettuce',
+      image: '/assets/cat-lettuce.jpg',
+      price: '50/kg',
+      category: 'exotic',
+    },
+    {
+      _id: '12',
+      name: 'Spinach',
+      image: '/assets/cat-spinach.jpg',
+      price: '35/bundle',
+      category: 'vegetable',
+    },
+    {
+      _id: '13',
+      name: 'Sweet Corn',
+      image: '/assets/cat-sweetcorn.jpg',
+      price: '45/piece',
+      category: 'vegetable',
+    },
+    {
+      _id: '14',
+      name: 'Carrot',
+      image: '/assets/cat-carrot.jpg',
+      price: '40/kg',
+      category: 'vegetable',
+    },
+    {
+      _id: '15',
+      name: 'Brussels Sprouts',
+      image: '/assets/cat-brussels.jpg',
+      price: '140/kg',
+      category: 'exotic',
+    }
+  ];
 
-  // Helper: read order timestamp safely
+  // ✅ Pick 4 random recommended items
+  const recommended = products
+    ? [...products].sort(() => 0.5 - Math.random()).slice(0, 3)
+    : [];
+
+  // ---- Delivery Slots ----
+  const getDeliverySlot = (order) => {
+    const ts = Number(order.timestamp) || Date.now();
+    const orderDate = new Date(ts);
+    const hours = orderDate.getHours() + orderDate.getMinutes() / 60;
+
+    if (hours < 9 - 0.16)
+      return { label: "9:00 AM – 11:00 AM", class: "morning" };
+    else if (hours < 13.5 - 0.16)
+      return { label: "1:30 PM – 4:30 PM", class: "afternoon" };
+    else return { label: "6:00 PM – 9:00 PM", class: "evening" };
+  };
+
+  // ---- Helpers ----
   const getOrderPlacedTime = (order) => {
     const explicitTs = Number(order.timestamp) || Number(order.createdAt);
     if (Number.isFinite(explicitTs) && explicitTs > 0) return explicitTs;
@@ -49,11 +170,21 @@ const Orders = () => {
     return Date.now();
   };
 
-  // Countdown for editing (newest order only)
-  useEffect(() => {
-    if (orders.length === 0) return;
+  // ---- Split orders ----
+  const now = Date.now();
+  const twoHours = 2 * 60 * 60 * 1000;
+  const currentOrders = orders.filter(
+    (o) => now - getOrderPlacedTime(o) < twoHours
+  );
+  const previousOrders = orders.filter(
+    (o) => now - getOrderPlacedTime(o) >= twoHours
+  );
 
-    const newestOrder = orders[0];
+  // Countdown for editing (only on newest current order)
+  useEffect(() => {
+    if (currentOrders.length === 0) return;
+
+    const newestOrder = currentOrders[0];
     const orderTime = getOrderPlacedTime(newestOrder);
 
     const updateCountdown = () => {
@@ -70,37 +201,29 @@ const Orders = () => {
     return () => clearInterval(interval);
   }, [orders]);
 
-  // ---- Should this order require payment proof? ----
+  // ---- Proof Handling ----
   const normalize = (v) => (v || "").toString().trim().toLowerCase();
 
   const needsPaymentProof = (order) => {
     const userType = normalize(order.userType) || "retail";
-
-    // retail: order.payment might be "gpay"|"cod"
-    // wholesale: order.payment might be { method, timing }
     const method =
       normalize(
         (order.payment && order.payment.method) ||
           order.payment ||
           order.paymentMethod
       ) || "";
-
     const timing =
       (order.payment && normalize(order.payment.timing)) || "now";
 
-    // Only ask for proof when timing is "now"
     if (timing !== "now") return false;
 
     if (userType === "wholesale") {
-      // Need proof if NOT cash/COD
       const isCashLike = method === "cash" || method === "cod";
-      return !isCashLike; // upi/gpay, banktransfer, netbanking, card, cheque need proof
+      return !isCashLike;
     }
-    // Retail: only if GPay/UPI
     return method === "gpay" || method === "upi";
   };
 
-  // ---- Local storage helpers to avoid repeat prompts ----
   const getProofStatus = (orderId) =>
     localStorage.getItem(`paymentProofStatus_${orderId}`) || "";
   const setProofStatus = (orderId, status) =>
@@ -114,37 +237,35 @@ const Orders = () => {
     setProofStatus(orderId, "uploaded");
   };
 
-  // ✅ Show modal ONLY AFTER timer hits 0, and only when required (newest order)
-  useEffect(() => {
-    if (orders.length === 0) return;
-    const newest = orders[0];
+  // Proof modal state
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [activeOrderForProof, setActiveOrderForProof] = useState(null);
+  const [proofPreview, setProofPreview] = useState("");
 
-    // If countdown still running, ensure modal is closed and bail
+  useEffect(() => {
+    if (currentOrders.length === 0) return;
+    const newest = currentOrders[0];
+
     if (timeLeft > 0) {
       if (showProofModal) setShowProofModal(false);
       return;
     }
 
-    // timeLeft === 0 -> decide whether to prompt
     const alreadyUploaded = getSavedProof(newest.id);
-    const status = getProofStatus(newest.id); // 'uploaded'
+    const status = getProofStatus(newest.id);
     const shouldAsk = needsPaymentProof(newest);
 
     if (shouldAsk && !alreadyUploaded && status !== "uploaded") {
       setActiveOrderForProof(newest);
       setShowProofModal(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, orders]);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      setProofPreview(reader.result.toString());
-      setProofFile(file);
-    };
+    reader.onload = () => setProofPreview(reader.result.toString());
     reader.readAsDataURL(file);
   };
 
@@ -157,6 +278,7 @@ const Orders = () => {
     setShowProofModal(false);
   };
 
+  // ---- Actions ----
   const handleReorder = (orderItems) => {
     reorderItems(orderItems);
     navigate("/cart");
@@ -168,150 +290,59 @@ const Orders = () => {
     navigate("/cart");
   };
 
-  // --- Split orders
-  const newestOrder = orders[0];
-  const previousOrders = orders.slice(1);
-
-  // Hint badge content for the current (newest) order
-  const currentProofHint = (() => {
-    if (!newestOrder) return null;
-    const proofNeeded = needsPaymentProof(newestOrder);
-    const uploaded = getSavedProof(newestOrder.id);
-    if (!proofNeeded) return <span className="order-hint ok">No payment proof required</span>;
-    if (timeLeft > 0) {
-      return (
-        <span className="order-hint warn">
-          Proof required after ⏳ {timeLeft}s
-        </span>
-      );
-    }
-    // timeLeft === 0
-    if (!uploaded) {
-      return <span className="order-hint danger">Proof pending</span>;
-    }
-    return <span className="order-hint ok">Proof uploaded</span>;
-  })();
-
   return (
     <div className="orders-page">
       <h2 className="orders-header">Your Orders</h2>
 
       {orders.length === 0 ? (
-        <p className="no-orders">You haven’t placed any orders yet.</p>
-      ) : (
-        <>
-          {/* ============== Current Order (newest) ============== */}
-          {newestOrder && (
-            <div className="orders-section">
-              <h3 className="section-title">
-                Current Order {currentProofHint && <span style={{ marginLeft: 8 }}>{currentProofHint}</span>}
-              </h3>
+  <div className="no-orders-wrapper">
+    <div className="no-orders-icon">🛒</div>
+    <h3>You haven’t placed any orders yet</h3>
+    <p>Start shopping fresh vegetables and groceries now.</p>
+    <button className="start-shopping-btn" onClick={() => navigate("/shop")}>
+      Start Shopping
+    </button>
 
-              <div className="orders-container">
-                <div key={newestOrder.id} className="order-card">
-                  {/* Order header */}
-                  <div className="order-top">
-                    <h3 className="order-id">Order #{newestOrder.id}</h3>
-                    <span className={`order-status ${newestOrder.status.toLowerCase()}`}>
-                      {newestOrder.status}
-                    </span>
-                  </div>
-
-                  {/* Items */}
-                  <div className="order-items">
-                    {newestOrder.items.map((item, i) => (
-                      <div key={i} className="order-item">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="item-image"
-                        />
-                        <div className="item-details">
-                          <p className="item-name">{item.name}</p>
-                          <p className="item-qty-price">
-                            {item.quantity} × ₹{item.price}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Meta */}
-                  <div className="order-meta">
-                    <p className="order-date">📅 {newestOrder.date}</p>
-                    <p className="order-total">💰 Total: {newestOrder.total}</p>
-                    {getSavedProof(newestOrder.id) && (
-                      <a
-                        className="order-proof-link"
-                        href={getSavedProof(newestOrder.id)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        📎 View Payment Proof
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="order-actions">
-                    {/* ⭐ Rating system */}
-                    <div className="rating">
-                      <span>Rate: </span>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          filled={newestOrder.rating >= star}
-                          onClick={() => updateOrderRating(newestOrder.id, star)}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Reorder */}
-                    <button
-                      className="reorder-btn"
-                      onClick={() => handleReorder(newestOrder.items)}
-                    >
-                      ↻ Reorder
-                    </button>
-
-                    {/* Edit with countdown — ALWAYS available during countdown */}
-                    {timeLeft > 0 && canEditOrder(newestOrder.id) && (
-                      <>
-                        <button
-                          className="edit-btn"
-                          onClick={() => handleEditOrder(newestOrder.items)}
-                        >
-                          ✏ Edit
-                        </button>
-                        <span className="edit-timer">⏳ {timeLeft}s left</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
+    {/* ✅ Recommendations appear ONLY when no orders */}
+    {recommended.length > 0 && (
+      <div className="recommendations">
+        <h3>Recommended for You</h3>
+        <div className="recommendation-grid">
+          {recommended.map((product) => (
+            <div
+              key={product.id}
+              className="recommend-card"
+              onClick={() => navigate(`/product/${product.id}`)}
+            >
+              <img src={product.image} alt={product.name} />
+              <h4>{product.name}</h4>
+              <p>₹{product.price}</p>
             </div>
-          )}
-
-          {/* ============== Previous Orders ============== */}
-          {previousOrders.length > 0 && (
+          ))}
+        </div>
+      </div>
+      )}
+    </div>
+       ) : (
+        <>
+          {/* ===== Current Orders ===== */}
+          {currentOrders.length > 0 && (
             <div className="orders-section">
-              <h3 className="section-title">Previous Orders</h3>
-
+              <h3 className="section-title">Current Orders</h3>
               <div className="orders-container">
-                {previousOrders.map((order) => {
-                  const uploadedProof = getSavedProof(order.id);
-                  const proofNeeded = needsPaymentProof(order);
+                {currentOrders.map((order) => {
+                  const slot = getDeliverySlot(order);
                   return (
                     <div key={order.id} className="order-card">
-                      {/* Order header */}
                       <div className="order-top">
                         <h3 className="order-id">Order #{order.id}</h3>
-                        <span className={`order-status ${order.status.toLowerCase()}`}>
+                        <span
+                          className={`order-status ${order.status.toLowerCase()}`}
+                        >
                           {order.status}
                         </span>
                       </div>
 
-                      {/* Items */}
                       <div className="order-items">
                         {order.items.map((item, i) => (
                           <div key={i} className="order-item">
@@ -330,27 +361,14 @@ const Orders = () => {
                         ))}
                       </div>
 
-                      {/* Meta */}
                       <div className="order-meta">
                         <p className="order-date">📅 {order.date}</p>
                         <p className="order-total">💰 Total: {order.total}</p>
-                        {uploadedProof ? (
-                          <a
-                            className="order-proof-link"
-                            href={uploadedProof}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            📎 View Payment Proof
-                          </a>
-                        ) : proofNeeded ? (
-                          <span className="order-hint danger">Proof not uploaded</span>
-                        ) : (
-                          <span className="order-hint ok">No payment proof required</span>
-                        )}
+                        <p className={`order-slot ${slot.class}`}>
+                          🚚 Delivery Slot: {slot.label}
+                        </p>
                       </div>
 
-                      {/* Actions */}
                       <div className="order-actions">
                         <div className="rating">
                           <span>Rate: </span>
@@ -362,14 +380,94 @@ const Orders = () => {
                             />
                           ))}
                         </div>
-
                         <button
                           className="reorder-btn"
                           onClick={() => handleReorder(order.items)}
                         >
                           ↻ Reorder
                         </button>
-                        {/* No edit or timer on previous orders */}
+                        {timeLeft > 0 && canEditOrder(order.id) && (
+                          <>
+                            <button
+                              className="edit-btn"
+                              onClick={() => handleEditOrder(order.items)}
+                            >
+                              ✏ Edit
+                            </button>
+                            <span className="edit-timer">
+                              ⏳ {timeLeft}s left
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ===== Previous Orders ===== */}
+          {previousOrders.length > 0 && (
+            <div className="orders-section">
+              <h3 className="section-title">Previous Orders</h3>
+              <div className="orders-container">
+                {previousOrders.map((order) => {
+                  const slot = getDeliverySlot(order);
+                  return (
+                    <div key={order.id} className="order-card">
+                      <div className="order-top">
+                        <h3 className="order-id">Order #{order.id}</h3>
+                        <span
+                          className={`order-status ${order.status.toLowerCase()}`}
+                        >
+                          {order.status}
+                        </span>
+                      </div>
+
+                      <div className="order-items">
+                        {order.items.map((item, i) => (
+                          <div key={i} className="order-item">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="item-image"
+                            />
+                            <div className="item-details">
+                              <p className="item-name">{item.name}</p>
+                              <p className="item-qty-price">
+                                {item.quantity} × ₹{item.price}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="order-meta">
+                        <p className="order-date">📅 {order.date}</p>
+                        <p className="order-total">💰 Total: {order.total}</p>
+                        <p className={`order-slot ${slot.class}`}>
+                          🚚 Delivery Slot: {slot.label}
+                        </p>
+                      </div>
+
+                      <div className="order-actions">
+                        <div className="rating">
+                          <span>Rate: </span>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              filled={order.rating >= star}
+                              onClick={() => updateOrderRating(order.id, star)}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          className="reorder-btn"
+                          onClick={() => handleReorder(order.items)}
+                        >
+                          ↻ Reorder
+                        </button>
                       </div>
                     </div>
                   );
@@ -380,7 +478,7 @@ const Orders = () => {
         </>
       )}
 
-      {/* Payment Proof Modal — only renders when timer is 0 for CURRENT order */}
+      {/* ===== Proof Modal ===== */}
       {timeLeft === 0 && showProofModal && activeOrderForProof && (
         <div className="popup-overlay">
           <div className="popup-content" style={{ maxWidth: 420 }}>
@@ -389,14 +487,7 @@ const Orders = () => {
               Please upload a screenshot/receipt for{" "}
               <b>Order #{activeOrderForProof.id}</b>.
             </p>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              style={{ marginBottom: "1rem" }}
-            />
-
+            <input type="file" accept="image/*" onChange={handleFileChange} />
             {proofPreview && (
               <img
                 src={proofPreview}
@@ -406,22 +497,15 @@ const Orders = () => {
                   maxHeight: 240,
                   objectFit: "cover",
                   borderRadius: 8,
-                  marginBottom: "1rem",
+                  marginTop: "1rem",
                 }}
               />
             )}
-
-            {/* ✅ Only Upload button; non-dismissable */}
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+            <div style={{ marginTop: "1rem" }}>
               <button className="popup-btn" onClick={handleSubmitProof}>
                 Upload Proof
               </button>
             </div>
-
-            <p style={{ marginTop: "0.75rem", fontSize: "0.85rem", color: "#666" }}>
-              You can edit your order for 2 minutes after placing it. We only ask for
-              proof after the timer ends and when the payment method requires it.
-            </p>
           </div>
         </div>
       )}

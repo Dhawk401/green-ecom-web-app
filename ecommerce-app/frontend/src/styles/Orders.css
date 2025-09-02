@@ -1,7 +1,7 @@
 /* ===== Page ===== */
 .orders-page {
   padding: 2rem;
-  background-color: #175023;
+  background: linear-gradient(135deg, #1f7a3f, #14532d);
   min-height: 100vh;
   font-family: system-ui, -apple-system, "Inter", Segoe UI, Roboto, sans-serif;
 }
@@ -314,5 +314,163 @@
   }
   .rating {
     justify-content: space-between;
+  }
+}
+
+
+/* Delivery Slot Badge */
+.order-slot {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+/* Morning (Green) */
+.order-slot.morning {
+  color: #1b5e20;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+}
+
+/* Afternoon (Orange) */
+.order-slot.afternoon {
+  color: #e65100;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+}
+
+/* Evening (Blue) */
+.order-slot.evening {
+  color: #1565c0;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+}
+
+/* ===== Empty Orders Modernized ===== */
+.no-orders-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  max-width: 650px;
+  margin: 3rem auto;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.no-orders-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: bounce 1.5s infinite;
+}
+
+.no-orders-wrapper h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #0d361f;
+}
+
+.no-orders-wrapper p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.start-shopping-btn {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.start-shopping-btn:hover {
+  background: linear-gradient(135deg, #1b5e20, #0d361f);
+  transform: translateY(-2px);
+}
+
+/* ===== Recommendations Section ===== */
+.recommendations {
+  margin-top: 3rem;
+  text-align: left;
+}
+
+.recommendations h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  color: #0d361f;
+}
+
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.2rem;
+}
+
+.recommend-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e6e6e6;
+}
+
+.recommend-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+}
+
+.recommend-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.8rem;
+}
+
+.recommend-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: #0d361f;
+}
+
+.recommend-card p {
+  font-size: 0.95rem;
+  color: #444;
+  font-weight: 600;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }

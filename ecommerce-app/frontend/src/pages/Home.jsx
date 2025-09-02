@@ -12,7 +12,6 @@ const Home = () => {
       <HeroSlider />
       <ProductGrid title="Trending Products" limit={8} />
       <TestimonialSlider />
-      <NewsletterSubscribe />
     </div>
   );
 };

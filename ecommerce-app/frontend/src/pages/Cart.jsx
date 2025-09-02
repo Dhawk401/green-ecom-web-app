@@ -80,7 +80,16 @@ const Cart = () => {
       </div>
 
       {cartItems.length === 0 ? (
-        <p className="empty-cart">No items in cart.</p>
+        <div className="empty-cart">
+          <div className="empty-cart-icon">🛒</div>
+          <p>No items in cart</p>
+          <button
+            className="start-shopping-btn"
+            onClick={() => navigate("/shop")}
+          >
+            Start Shopping
+          </button>
+        </div>
       ) : (
         <>
           {/* Cart Items */}

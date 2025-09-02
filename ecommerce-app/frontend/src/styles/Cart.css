@@ -1,3 +1,67 @@
+/* Page wrapper to push footer down */
+.cart-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh; /* ✅ Ensures page has decent height even if empty */
+}
+
+/* When cart is empty, center everything vertically in a column */
+.empty-cart {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  padding: 6rem 0; /* Balanced spacing */
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* ✅ Stack vertically */
+  align-items: center;    /* ✅ Center horizontally */
+  justify-content: center;/* ✅ Center vertically */
+  gap: 1rem; /* ✅ Space between icon, text, button */
+}
+
+.empty-cart-icon {
+  font-size: 3rem;
+  color: #175023;
+  animation: bounce 1.5s infinite;
+}
+
+.start-shopping-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.6rem;
+  background: linear-gradient(135deg, #0e351f, #227e2d);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.start-shopping-btn:hover {
+  background: linear-gradient(135deg, #227e2d, #2fa745);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* ✅ Responsive adjustments */
+@media (max-width: 640px) {
+  .empty-cart {
+    padding: 3rem 1rem; /* Less padding on mobile */
+    font-size: 1rem;    /* Slightly smaller text */
+    gap: 0.8rem;
+  }
+
+  .empty-cart-icon {
+    font-size: 2.2rem; /* Smaller icon */
+  }
+
+  .start-shopping-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+  }
+}
+
 .cart-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -384,3 +448,4 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(22px);
 }
+
