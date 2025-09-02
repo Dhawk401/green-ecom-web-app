@@ -1,0 +1,133 @@
+.product-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-link img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* wrapper */
+.quantity-controls1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0e351f;
+  border-radius: 10px;
+  overflow: hidden;
+  width: fit-content;
+  height: 38px;               /* slightly taller for balance */
+  margin: 0 auto;             /* keep centered */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* buttons */
+.qty-btn1 {
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  border: 0;
+  width: 40px;                /* consistent hit area */
+  height: 38px;               /* match wrapper height */
+  cursor: pointer;
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .15s ease, transform .05s ease;
+  /* remove the old misaligning top margin */
+  margin-top: 16px;
+}
+
+.qty-btn1:hover {
+  background-color: rgba(255,255,255,0.12);
+}
+
+.qty-btn1:active {
+  transform: translateY(1px);
+}
+
+.qty-btn1:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* focus ring for keyboard users */
+.qty-btn1:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 3px rgba(255,255,255,0.25);
+  border-radius: 8px;
+}
+
+/* counter */
+.quantity-controls1 span {
+  padding: 0 .9rem;
+  min-width: 2.2rem;          /* ensures stable width for 2+ digits */
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+  font-variant-numeric: tabular-nums; /* aligned numbers */
+  border-left: 1px solid rgba(255,255,255,0.14);
+  border-right: 1px solid rgba(255,255,255,0.14);
+}
+
+.add-to-cart-btn {
+  display: inline-block;
+  background: #0e351f; /* dark green */
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 0.75rem 1.8rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(14, 53, 31, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.add-to-cart-btn:hover {
+  background: #145c33; /* lighter green */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14, 53, 31, 0.3);
+}
+
+.add-to-cart-btn:active {
+  transform: scale(0.97);
+  background: #0c2b19;
+}
+
+.add-to-cart-btn:disabled {
+  background: #a5b1a7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
+/* optional: compact tweak on very small screens */
+@media (max-width: 380px) {
+  .quantity-controls1 {
+    height: 36px;
+  }
+  .qty-btn1,
+  .quantity-controls1 span {
+    height: 36px;
+  }
+}

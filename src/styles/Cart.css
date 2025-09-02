@@ -1,0 +1,451 @@
+/* Page wrapper to push footer down */
+.cart-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh; /* ✅ Ensures page has decent height even if empty */
+}
+
+/* When cart is empty, center everything vertically in a column */
+.empty-cart {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  padding: 6rem 0; /* Balanced spacing */
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* ✅ Stack vertically */
+  align-items: center;    /* ✅ Center horizontally */
+  justify-content: center;/* ✅ Center vertically */
+  gap: 1rem; /* ✅ Space between icon, text, button */
+}
+
+.empty-cart-icon {
+  font-size: 3rem;
+  color: #175023;
+  animation: bounce 1.5s infinite;
+}
+
+.start-shopping-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.6rem;
+  background: linear-gradient(135deg, #0e351f, #227e2d);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.start-shopping-btn:hover {
+  background: linear-gradient(135deg, #227e2d, #2fa745);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* ✅ Responsive adjustments */
+@media (max-width: 640px) {
+  .empty-cart {
+    padding: 3rem 1rem; /* Less padding on mobile */
+    font-size: 1rem;    /* Slightly smaller text */
+    gap: 0.8rem;
+  }
+
+  .empty-cart-icon {
+    font-size: 2.2rem; /* Smaller icon */
+  }
+
+  .start-shopping-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+  }
+}
+
+.cart-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.cart-heading {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+}
+
+.cart-box {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.cart-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.cart-heading {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #1f1f1f;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center; /* ✅ Aligns everything vertically */
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cart-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0; /* ✅ Prevents image from shrinking */
+}
+
+.item-details {
+  flex: 1; /* ✅ Takes remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.item-details h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.item-details p {
+  margin: 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Quantity + Remove buttons neatly aligned */
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+
+.cart-summary {
+  margin-top: 2rem;
+  text-align: right;
+}
+
+.cart-summary h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+/* Quantity Controls - Unified Green Bar */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  background-color: #0e351f;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 38px;
+}
+
+/* Adjusted buttons */
+.qty-btn {
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qty-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Quantity number */
+.quantity-controls span {
+  padding: 0 1rem;
+  color: white;
+  font-weight: 600;
+}
+
+.remove-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+  width: 100px; /* ✅ Consistent size */
+  text-align: center;
+}
+
+.remove-btn:hover {
+  background: #c9302c;
+}
+
+/* ✅ Wrapper for aligning both buttons side by side */
+.cart-buttons {
+  display: flex;
+  justify-content: space-between; /* Spread apart */
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+/* ✅ Continue Shopping Button */
+.continue-shopping-btn {
+  background: transparent;
+  color: #0e351f;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.9rem 1.7rem;
+  border: 2px solid #0e351f;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.continue-shopping-btn:hover {
+  background-color: #0e351f;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(14, 53, 31, 0.2);
+}
+
+/* ✅ Checkout Button */
+.z-checkout-btn {
+  padding: 0.9rem 1.7rem;
+  background: linear-gradient(135deg, #0e351f, #227e2d);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  flex: 1; /* Makes it responsive */
+  max-width: 250px;
+}
+
+.z-checkout-btn:hover {
+  background: linear-gradient(135deg, #227e2d, #2fa745);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.recommended-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9f8;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.recommended-section h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #0e351f;
+}
+
+.recommended-grid {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.recommended-card {
+  min-width: 150px;
+  background: white;
+  border-radius: 6px;
+  padding: 0.8rem;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.recommended-card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.recommended-card h4 {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+.recommended-card p {
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.recommended-card button {
+  background: #0e351f;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.recommended-card button:hover {
+  background: #1c7133;
+}
+
+
+/* Overlay behind modal */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55); /* Dark translucent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Ensure it stays above everything */
+}
+
+/* Modal box */
+.popup-content {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.3s ease;
+}
+
+/* Title */
+.popup-content h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #0e351f;
+}
+
+/* Buttons */
+.popup-btn {
+  display: block;
+  width: 100%;
+  padding: 0.9rem;
+  margin: 0.6rem 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #0e351f;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.popup-btn:hover {
+  background-color: #1c7133;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+.user-type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.user-type-toggle span {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.user-type-toggle span.active {
+  color: #175023;
+  font-weight: 700;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+input:checked + .slider {
+  background-color: #175023;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+

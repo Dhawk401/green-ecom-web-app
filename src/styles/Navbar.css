@@ -1,0 +1,129 @@
+/* ================= NAVBAR ================= */
+.navbar {
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 71, 37, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0;
+}
+
+.navbar-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ========== Logo ========== */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 46px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+/* ========== Nav Links ========== */
+.navbar-links {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  list-style: none;
+}
+
+.navbar-links a {
+  position: relative;
+  color: #0e351f;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  transition: color 0.25s ease;
+}
+
+/* Underline animation */
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 2px;
+  width: 0%;
+  background: #1d7a46;
+  transition: width 0.25s ease;
+}
+
+.navbar-links a:hover {
+  color: #1d7a46;
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+  width: 100%;
+}
+
+.navbar-links a.active {
+  color: #1d7a46;
+  font-weight: 600;
+}
+
+/* ========== Icons ========== */
+.navbar-icons {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.navbar-icons a {
+  color: #0e351f;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.25s ease, transform 0.2s ease;
+}
+
+.navbar-icons a:hover {
+  color: #1d7a46;
+  transform: scale(1.1);
+}
+
+/* Cart badge */
+.cart-link {
+  position: relative;
+  margin-top: 2px;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #2e9729;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}

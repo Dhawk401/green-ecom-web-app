@@ -1,0 +1,165 @@
+/* ===== Wrapper ===== */
+.modern-profile-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: radial-gradient(circle at top left, #3ba86b, #165330);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ===== Card ===== */
+.modern-profile-card {
+  background: #ffffff;
+  padding: 1.8rem 1.4rem;
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem; /* spacing between blocks */
+  transition: transform 0.2s ease;
+}
+
+.modern-profile-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== Profile Top Section ===== */
+.profile-top {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #1f7a3f, #14532d);
+  padding: 1.2rem;
+  border-radius: 14px;
+  color: #fff; /* keep text white */
+  position: relative;
+  box-shadow: 0 4px 16px rgba(31, 122, 63, 0.3);
+  gap: 0.8rem;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+}
+
+.profile-info1 {
+  flex-grow: 1;
+}
+
+.profile-info1 h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff; /* enforce white */
+}
+
+.profile-info1 p {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  color: #eaeaea; /* subtle white-grey */
+}
+
+.edit-icon {
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.2rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.edit-icon:hover {
+  opacity: 1;
+}
+
+/* ===== Profile Option ===== */
+.profile-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.profile-option:hover {
+  background: #f2f8f4;
+  transform: translateX(2px);
+}
+
+/* Use .left wrapper like in old CSS */
+.profile-option .left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;   /* nice spacing between icon and text */
+  flex: 1;
+}
+
+.profile-option .icon {
+  font-size: 1.35rem;
+  color: #1f5132;
+  flex-shrink: 0; /* prevent icon from shrinking */
+}
+
+.text-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-block p {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  color: #222;
+}
+
+.text-block span {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+/* Help/About single-line text */
+.text-block1 p {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  color: #222;
+}
+
+/* ===== Logout Special Style ===== */
+.profile-option.logout {
+  background: #fff7f7;
+  color: #d63d3d;
+}
+
+.profile-option.logout .icon {
+  color: #d63d3d;
+}
+
+.profile-option.logout:hover {
+  background: #ffecec;
+}
+
+/* ===== Section divider for Help/About ===== */
+.profile-section {
+  margin-top: 1rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* Disabled option */
+.profile-option.disabled {
+  opacity: 0.6;
+  pointer-events: none; /* makes it unclickable */
+  cursor: not-allowed;
+}

@@ -1,0 +1,198 @@
+.account-details {
+  padding: 2rem;
+  max-width: 750px;
+  margin: 60px auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.account-details:hover {
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0e351f;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 0.8rem;
+}
+
+/* Back Button */
+.back-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  font-size: 22px;
+  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: #e9ecef;
+  color: #0e351f;
+  transform: translateY(-2px);
+}
+
+/* Edit Button */
+.edit-btn {
+  font-size: 15px;
+  background: #0e351f;
+  border: none;
+  color: #fff;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #145c33;
+  transform: translateY(-2px);
+}
+
+/* Section Card */
+.section {
+  margin-top: 1.8rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #fafafa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.section h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #175023;
+  margin-bottom: 1rem;
+  border-left: 4px solid #175023;
+  padding-left: 0.6rem;
+}
+
+/* Info Grid */
+.details-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 24px;
+}
+
+/* Info group */
+.info-group {
+  font-size: 0.95rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+  color: #333;
+  font-weight: 500;
+}
+
+.info-group strong {
+  font-weight: 600;
+  color: #0e351f;
+  margin-right: 6px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .details-section {
+    grid-template-columns: 1fr;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .edit-btn {
+    align-self: flex-end;
+  }
+}
+
+/* Profile Card */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background: #fafafa;
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.8rem;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.profile-info h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0e351f;
+}
+
+.profile-info p {
+  margin: 0.2rem 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background: #e6f8f0;
+  color: #0e351f;
+}
+
+.account-switcher {
+  display: flex;
+  gap: 10px;
+  margin: 8px 0 18px;
+}
+
+.switch-pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d6e2d7;
+  background: #f7fbf8;
+  color: #0e351f;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.switch-pill:hover {
+  background: #eaf5ee;
+}
+
+.switch-pill.active {
+  background: #0e351f;
+  border-color: #0e351f;
+  color: #fff;
+}

@@ -1,0 +1,122 @@
+.combo-wrapper {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.combo-wrapper .section-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #0e351f;
+  text-align: left;
+}
+
+.combo-wrapper .Combo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.combo-wrapper .Combo-card {
+  width: 100%;
+  max-width: 250px;
+  height: 340px; /* slightly taller to accommodate quantity controls */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s ease;
+  margin: 0 auto;
+}
+
+.combo-wrapper .Combo-card:hover {
+  transform: translateY(-5px);
+}
+
+.combo-wrapper .Combo-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.combo-wrapper .Combo-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+  color: #1f1f1f;
+}
+
+.combo-wrapper .Combo-card p {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+/* Button styling */
+.combo-wrapper .Combo-card button {
+  margin-top: auto;
+  padding: 0.5rem 1rem;
+  background-color: #0e351f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.combo-wrapper .Combo-card button:hover {
+  background-color: #227e2d;
+}
+
+/* Quantity Controls Styling */
+.quantity-controls1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0e351f;
+  border-radius: 6px;
+  overflow: hidden;
+  width: fit-content;
+  height: 35px;
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+}
+
+.qty-btn1 {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0 0.8rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.qty-btn1:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.quantity-controls1 span {
+  padding: 0 1rem;
+  font-size: 1rem;
+  color: white;
+  font-weight: 500;
+  min-width: 1rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
