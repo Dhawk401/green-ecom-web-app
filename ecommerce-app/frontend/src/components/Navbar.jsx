@@ -10,7 +10,7 @@ const Navbar = () => {
   const { cartCount } = useCart();
   const { user, logoutUser } = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);   // 🔹 reference for dropdown container
+  const [menuOpen, setMenuOpen] = useState(false); // 🔹 mobile menu state
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,66 +25,104 @@ const Navbar = () => {
 
   const isProfilePage = location.pathname === "/profile";
 
-  // 🔹 Close dropdown if clicked outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <header className="navbar">
-      <div className="navbar-container">
-        <NavLink to="/" className="navbar-logo">
-          <img src="/assets/image.png" alt="GreenSure Logo" className="logo-img" />
-        </NavLink>
-
-        <nav className="navbar-links">
-          <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>Home</NavLink>
-          <NavLink to="/shop" className={({ isActive }) => (isActive ? "active" : "")}>Shop</NavLink>
-          <NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>About</NavLink>
-          <NavLink to="/contact" className={({ isActive }) => (isActive ? "active" : "")}>Contact</NavLink>
-        </nav>
-
-        <div className="navbar-icons">
-          <NavLink to="/cart" className="cart-link">
-            <FaShoppingCart />
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+    <>
+      {/* Sticky Navbar */}
+      <header className="navbar">
+        <div className="navbar-container">
+          {/* Logo */}
+          <NavLink to="/" className="navbar-logo">
+            <img
+              src="/assets/image.png"
+              alt="GreenSure Logo"
+              className="logo-img"
+            />
           </NavLink>
 
-          {user && !isProfilePage ? (
-            <div className="profile-dropdown-container" ref={dropdownRef}>
-              <div onClick={() => setDropdownOpen((prev) => !prev)}>
-                <ProfileAvatar />
-              </div>
-              {dropdownOpen && (
-                <div className="profile-dropdown">
-                  <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setDropdownOpen(false); // close after navigating
-                    }}
-                  >
-                    Profile
-                  </button>
-                  <button onClick={handleLogout}>Logout</button>
+          {/* Desktop Nav links */}
+          <nav className="navbar-links">
+            <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>
+              Home
+            </NavLink>
+            <NavLink to="/shop" className={({ isActive }) => (isActive ? "active" : "")}>
+              Shop
+            </NavLink>
+            <NavLink to="/about" className={({ isActive }) => (isActive ? "active" : "")}>
+              About
+            </NavLink>
+            <NavLink to="/contact" className={({ isActive }) => (isActive ? "active" : "")}>
+              Contact
+            </NavLink>
+          </nav>
+
+          {/* Icons + Hamburger (far right) */}
+          <div className="navbar-icons">
+            <NavLink to="/cart" className="cart-link">
+              <FaShoppingCart />
+              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+            </NavLink>
+
+            {user && !isProfilePage ? (
+              <div className="profile-dropdown-container">
+                <div onClick={() => setDropdownOpen((prev) => !prev)}>
+                  <ProfileAvatar />
                 </div>
-              )}
+              </div>
+            ) : (
+              !user && (
+                <NavLink to="/login" className={({ isActive }) => (isActive ? "active" : "")}>
+                  LOG IN
+                </NavLink>
+              )
+            )}
+
+            {/* 🔹 Hamburger beside profile/cart */}
+            <div
+              className={`hamburger ${menuOpen ? "open" : ""}`}
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
-          ) : (
-            !user && (
-              <NavLink to="/login" className={({ isActive }) => (isActive ? "active" : "")}>
-                LOG IN
-              </NavLink>
-            )
-          )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Overlay when menu or profile dropdown is open */}
+      <div
+        className={`menu-overlay ${(menuOpen || dropdownOpen) ? "open" : ""}`}
+        onClick={() => {
+          setMenuOpen(false);
+          setDropdownOpen(false);
+        }}
+      ></div>
+
+      {/* 🔹 Mobile Menu (sibling, outside navbar) */}
+      {menuOpen && (
+        <nav className={`mobile-menu ${menuOpen ? "open" : ""}`}>
+          <NavLink to="/" onClick={() => setMenuOpen(false)}>Home</NavLink>
+          <NavLink to="/shop" onClick={() => setMenuOpen(false)}>Shop</NavLink>
+          <NavLink to="/about" onClick={() => setMenuOpen(false)}>About</NavLink>
+          <NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact</NavLink>
+        </nav>
+      )}
+
+      {/* 🔹 Profile Dropdown (sibling, outside navbar) */}
+      {dropdownOpen && (
+        <div className="profile-dropdown">
+          <button
+            onClick={() => {
+              navigate("/profile");
+              setDropdownOpen(false);
+            }}
+          >
+            Profile
+          </button>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      )}
+    </>
   );
 };
 

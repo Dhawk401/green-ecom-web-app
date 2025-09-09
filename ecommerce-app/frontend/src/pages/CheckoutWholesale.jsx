@@ -132,27 +132,29 @@ const CheckoutWholesale = () => {
 
   return (
     <div className="checkout-page">
-      <h2>Checkout (Wholesale)</h2>
+      <h2>Checkout</h2>
 
-      {/* Stepper (1–4) */}
-      <div className="step-indicator">
-        <div className={`step ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
-          <span className="step-number">1</span>
-          <span className="step-label">Details</span>
+     {/* Stepper (1–4) */}
+      <div className="stepper">
+        <div className={`step-item ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
+          <div className="step-circle">1</div>
+          <p className="step-title">Details</p>
         </div>
-        <div className={`step ${step > 2 ? "completed" : step === 2 ? "active" : ""}`}>
-          <span className="step-number">2</span>
-          <span className="step-label">Review</span>
+        <div className={`step-item ${step > 2 ? "completed" : step === 2 ? "active" : ""}`}>
+          <div className="step-circle">2</div>
+          <p className="step-title">Review</p>
         </div>
-        <div className={`step ${step > 3 ? "completed" : step === 3 ? "active" : ""}`}>
-          <span className="step-number">3</span>
-          <span className="step-label">Payment</span>
+        <div className={`step-item ${step > 3 ? "completed" : step === 3 ? "active" : ""}`}>
+          <div className="step-circle">3</div>
+          <p className="step-title">Payment</p>
         </div>
-        <div className={`step ${step === 4 ? "active" : ""}`}>
-          <span className="step-number">4</span>
-          <span className="step-label">Pay Now/Later</span>
+        <div className={`step-item ${step === 4 ? "active" : ""}`}>
+          <div className="step-circle">4</div>
+          <p className="step-title">Pay Now/Later</p>
         </div>
       </div>
+
+
 
       {/* STEP 1: Details */}
       {step === 1 && (

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// src/components/ProductGrid.jsx
+import React, { useEffect, useState, useMemo } from 'react';
 import ProductCard from './ProductCard';
 import '../styles/ProductGrid.css'; // Assuming you have a CSS file for styles
 
@@ -111,33 +112,32 @@ export const dummyProducts = [
 ];
 
 const ProductGrid = ({ title, limit, selectedCategory: categoryProp = 'all', searchTerm = '' }) => {
-  const [products, setProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState(categoryProp);
 
-  useEffect(() => {
+  // compute filteredProducts using useMemo for small perf gain
+  const filteredProducts = useMemo(() => {
     let filtered = dummyProducts;
 
-    // Filter by category
     if (activeCategory !== 'all') {
       filtered = filtered.filter(p => p.category === activeCategory);
     }
 
-    // Filter by search term
-    if (searchTerm.trim()) {
+    if (searchTerm && searchTerm.trim()) {
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Limit results
     if (limit) {
       filtered = filtered.slice(0, limit);
     }
 
-    setProducts(filtered);
-  }, [limit, activeCategory, searchTerm]);
+    return filtered;
+  }, [activeCategory, searchTerm, limit]);
 
+  // simple add-to-cart handler passed to ProductCard (keeps backward compatibility)
   const handleAddToCart = (product) => {
+    // if your ProductCard uses context internally this won't be used, but it's safe to pass.
     alert(`${product.name} added to cart!`);
   };
 
@@ -170,8 +170,9 @@ const ProductGrid = ({ title, limit, selectedCategory: categoryProp = 'all', sea
       )}
 
       <div className="product-grid">
-        {products.length > 0 ? (
-          products.map(product => (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(product => (
+            // pass onAddToCart so ProductCard can use it if needed
             <ProductCard key={product._id} product={product} onAddToCart={handleAddToCart} />
           ))
         ) : (

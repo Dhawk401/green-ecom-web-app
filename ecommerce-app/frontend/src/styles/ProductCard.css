@@ -1,3 +1,5 @@
+/* src/styles/ProductCard.css */
+
 .product-card {
   border: 1px solid #ddd;
   padding: 1rem;
@@ -10,11 +12,22 @@
   color: inherit;
 }
 
-.product-link img {
+/* Ensure both plain <img> and LazyImage wrapper (.product-thumb) get the same sizing */
+.product-link img,
+.product-thumb,
+.product-thumb img {
   width: 100%;
+  /* constant height: change this value to suit your design */
   height: 180px;
   object-fit: cover;
   border-radius: 8px;
+  display: block;
+}
+
+/* keep wrapper overflow hidden so placeholder + real image don't break layout */
+.product-thumb {
+  overflow: hidden;
+  position: relative;
 }
 
 /* wrapper */
@@ -47,8 +60,8 @@
   align-items: center;
   justify-content: center;
   transition: background-color .15s ease, transform .05s ease;
-  /* remove the old misaligning top margin */
-  margin-top: 16px;
+  /* removed margin-top that caused misalignment */
+  margin-top: 13px;
 }
 
 .qty-btn1:hover {

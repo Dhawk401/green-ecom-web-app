@@ -1,42 +1,53 @@
+/* =========================
+   CHECKOUT PAGE - STYLES
+   Optimized & mobile-friendly
+   ========================= */
+
+/* ---------- Root variables ---------- */
+:root{
+  --step-primary: #0e351f;
+  --step-muted: #e0e0e0;
+  --step-text: #4a4a4a;
+  --step-size: 38px;
+  --transition-speed: 0.4s;
+  --page-bg: #f4f4f4;
+}
+
 /* ===== Checkout Page Wrapper ===== */
 .checkout-page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
-  background: #f5f6f7;
+  background: var(--page-bg);
   min-height: 100vh;
   font-family: "Inter", sans-serif;
+  box-sizing: border-box;
 }
 
 .checkout-page h2 {
   text-align: center;
   font-size: 2.2rem;
   margin-bottom: 2rem;
-  color: #0e351f;
+  color: var(--step-primary);
   font-weight: 700;
 }
 
-/* ===== Step Indicator (vertical layout with aligned labels) ===== */
-:root {
-  --step-primary: #0e351f;
-  --step-muted: #cfd6d1;
-  --step-text: #4a4a4a;
-  --step-size: 36px; /* circle size */
-}
-
-.step-indicator {
+/* ===== Stepper ===== */
+/* Stepper container (desktop default: spaced across) */
+.stepper {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 3rem; /* space between steps */
+  justify-content: space-between;
+  align-items: center;
   margin: 2rem auto;
   position: relative;
   width: 100%;
-  max-width: 720px;
+  max-width: 800px;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
 }
 
-/* connector line */
-.step-indicator::before {
+/* connecting line */
+.stepper::before {
   content: "";
   position: absolute;
   top: calc(var(--step-size) / 2);
@@ -47,75 +58,67 @@
   z-index: 0;
 }
 
-/* each step */
-.step {
+/* step item */
+.step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  text-align: center;
   position: relative;
-  z-index: 1; /* above connector line */
+  z-index: 1;
+  flex: 1;
 }
 
-.step-number {
+/* circle */
+.step-circle {
   width: var(--step-size);
   height: var(--step-size);
   border-radius: 50%;
-  background: #e5e5e5;
-  color: #555;
-  font-weight: 600;
+  background: #fff;
+  border: 3px solid var(--step-muted);
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  color: #555;
+  transition: all var(--transition-speed) ease;
+  z-index: 2;
 }
 
-.step-label {
-  font-size: 0.9rem;
+/* label */
+.step-title {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--step-text);
+  text-align: center;
 }
 
-/* Active step */
-.step.active .step-number {
+/* active */
+.step-item.active .step-circle {
+  border-color: var(--step-primary);
   background: var(--step-primary);
   color: #fff;
-  box-shadow: 0 0 8px rgba(14, 53, 31, 0.4);
+  box-shadow: 0 0 12px rgba(14, 53, 31, 0.3);
+  transform: scale(1.1);
 }
+.step-item.active .step-title { color: var(--step-primary); font-weight: 600; }
 
-.step.active .step-label {
-  color: var(--step-primary);
-  font-weight: 600;
-}
-
-/* Completed step (optional with checkmark) */
-.step.completed .step-number {
+/* completed pulse */
+.step-item.completed .step-circle {
+  border-color: var(--step-primary);
   background: #e6f8f0;
   color: var(--step-primary);
-  border: 2px solid var(--step-primary);
+  animation: pulse var(--transition-speed) ease;
+}
+.step-item.completed .step-title { color: var(--step-primary); font-weight: 600; }
+
+@keyframes pulse {
+  0%   { transform: scale(1); background: #fff; }
+  50%  { transform: scale(1.2); background: #c8f5df; }
+  100% { transform: scale(1); background: #e6f8f0; }
 }
 
-.step.completed .step-number::before {
-  content: "✓";
-  font-weight: 700;
-}
-
-/* Mobile adjustments */
-@media (max-width: 600px) {
-  :root {
-    --step-size: 30px;
-  }
-  .step-indicator {
-    gap: 1.5rem;
-  }
-  .step-label {
-    font-size: 0.8rem;
-  }
-}
-
-
-/* ===== Section Card ===== */
+/* ===== Checkout Section (card) ===== */
 .checkout-section {
   max-width: 800px;
   margin: 0 auto;
@@ -123,13 +126,14 @@
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 .checkout-step h3 {
   margin-bottom: 1.2rem;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #0e351f;
+  color: var(--step-primary);
 }
 
 /* ===== Form Fields (Step 1) ===== */
@@ -139,7 +143,9 @@
   flex-wrap: wrap;
 }
 
-.checkout-form input {
+.checkout-form input,
+.checkout-form textarea,
+.checkout-form select {
   width: 100%;
   padding: 0.9rem 1rem;
   border: 1px solid #ccc;
@@ -148,21 +154,20 @@
   margin-bottom: 1.2rem;
   outline: none;
   transition: border 0.3s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
-.checkout-form input:focus {
-  border-color: #0e351f;
+.checkout-form input:focus,
+.checkout-form textarea:focus,
+.checkout-form select:focus {
+  border-color: var(--step-primary);
   box-shadow: 0 0 5px rgba(14, 53, 31, 0.25);
 }
 
-.checkout-form .row {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-}
+.checkout-form .row { display:flex; gap:1rem; width:100%; box-sizing:border-box; }
 
 .next-button {
-  background-color: #0e351f;
+  background-color: var(--step-primary);
   color: white;
   padding: 1rem 1.5rem;
   border: none;
@@ -173,365 +178,330 @@
   transition: background-color 0.3s ease, transform 0.2s ease;
   width: 100%;
 }
+.next-button:hover { background-color: #145c33; transform: translateY(-2px); }
 
-.next-button:hover {
-  background-color: #145c33;
-  transform: translateY(-2px);
-}
+/* ===== Order Review / Cart Summary (Step 2) ===== */
+.order-summary { margin-top: 1rem; }
 
-/* ===== Order Review (Step 2) ===== */
-.order-summary {
-  margin-top: 1rem;
-}
-
-.cart-summary-list {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0;
-}
+.cart-summary-list { list-style: none; padding: 0; margin: 1.5rem 0; }
 
 .cart-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid #eee;
+  display:flex; align-items:center; gap:1rem; padding:1rem 0; border-bottom:1px solid #eee;
 }
 
 .cart-summary-item img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 10px;
-  flex-shrink: 0;
+  width:70px; height:70px; object-fit:cover; border-radius:10px; flex-shrink:0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.cart-summary-item div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
+.cart-summary-item div { display:flex; flex-direction:column; gap:0.2rem; }
 
-.cart-summary-item strong {
-  font-size: 1rem;
-  color: #0e351f;
-}
+.cart-summary-item strong { font-size:1rem; color:var(--step-primary); }
+.cart-summary-item p { font-size:0.9rem; color:#555; }
 
-.cart-summary-item p {
-  font-size: 0.9rem;
-  color: #555;
-}
+.total-amount { font-size:1.2rem; font-weight:700; color:var(--step-primary); margin-top:1rem; text-align:right; }
 
-.total-amount {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #0e351f;
-  margin-top: 1rem;
-  text-align: right;
-}
-
-/* ===== Customer Details in Summary ===== */
+ /* customer details */
 .customer-details {
-  margin-top: 1.5rem;
-  background: #f9fafb;
-  padding: 1rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  color: #333;
+  margin-top:1.5rem; background:#f9fafb; padding:1rem; border-radius:10px; font-size:0.95rem; color:#333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-.customer-details p {
-  margin: 0.2rem 0;
-}
-
-
-/* ===== Payment Options (Step 3) ===== */
-.payment-options {
-  display: flex;
-  gap: 1rem;
-  margin: 1.5rem 0;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.payment-card {
-  flex: 1;
-  min-width: 150px;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.2rem;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  cursor: pointer;
-  background-color: #fafafa;
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.payment-card input[type="radio"] {
-  display: none;
-}
-
-.payment-card .payment-icon {
-  width: 50px;
-  height: 50px;
-  margin-bottom: 0.6rem;
-  font-size: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.payment-card span {
-  font-weight: 500;
-  font-size: 1rem;
-  color: #444;
-}
-
-.payment-card:hover {
-  border-color: #0e351f;
-  background-color: #f1fdf7;
-}
-
-.payment-card.selected {
-  border-color: #0e351f;
-  background-color: #e6f8f0;
-  box-shadow: 0 0 12px rgba(14, 53, 31, 0.25);
-}
-
-
-/* ===== Navigation Buttons ===== */
-.review-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2rem;
-  gap: 1rem;
-}
-
-.review-buttons button {
-  flex: 1;
-  padding: 1rem;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s ease;
-}
-
-/* Back */
-.review-buttons button[type="button"] {
-  background-color: #ddd;
-  color: #333;
-}
-
-.review-buttons button[type="button"]:hover {
-  background-color: #bbb;
-}
-
-/* Place Order */
-.pay-button {
-  background-color: #0e351f;
-  color: white;
-}
-
-.pay-button:hover {
-  background-color: #145c33;
-  transform: translateY(-2px);
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .checkout-page {
-    padding: 1rem;
-  }
-  .checkout-form .row {
-    flex-direction: column;
-  }
-  .review-buttons {
-    flex-direction: column;
-  }
-}
-
-/* ===== Order Review (Step 2) ===== */
-.cart-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.cart-summary-item img {
-  width: 60px !important;   /* fixed thumbnail size */
-  height: 60px !important;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-  display: block;           /* prevents weird scaling */
-}
-
-/* ===== Payment Step (Step 3) ===== */
-.checkout-section {
-  justify-content: center;  /* ✅ vertical centering */
-  align-items: center;      /* ✅ horizontal centering */
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.checkout-section h3 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #0e351f;
-  margin-bottom: 1.5rem;
-  text-align: center;   /* center align heading */
-}
-
-.checkout-section .total-amount {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #0e351f;
-  margin-bottom: 1rem;
-  text-align: center;    /* align total neatly to the right */
-}
-
+/* ===== Payment Options (Step 3) - desktop default grid 2x2 ===== */
 .payment-options {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* ✅ 2 cards per row */
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.2rem;
   justify-content: center;
   margin: 1.5rem 0 2rem 0;
-  max-width: 450px; /* ✅ keeps grid compact */
+  max-width: 450px;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
 }
 
 .payment-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem 1.2rem;
-  border: 2px solid #e1e1e1;
-  border-radius: 14px;
-  cursor: pointer;
-  background: linear-gradient(145deg, #ffffff, #f5f5f5);
-  transition: all 0.3s ease;
-  text-align: center;
-  position: relative;
+  display:flex; flex-direction:column; align-items:center; padding:1.5rem 1.2rem;
+  border:2px solid #e1e1e1; border-radius:14px; cursor:pointer;
+  background: linear-gradient(145deg,#ffffff,#f5f5f5); transition: all 0.3s ease;
+  text-align:center; position:relative; box-sizing:border-box;
 }
 
-.payment-card input {
-  display: none; /* hide radio button */
+.payment-card input { display:none; }
+
+.payment-card .payment-icon {
+  font-size:2rem; margin-bottom:0.6rem; color:#1a5c37; transition: transform 0.2s ease, color 0.3s ease;
 }
 
-.payment-icon {
-  font-size: 2rem;
-  margin-bottom: 0.6rem;
-  color: #1a5c37;
-  transition: transform 0.2s ease, color 0.3s ease;
-}
+.payment-card span { font-weight:600; font-size:0.95rem; color:#333; }
 
-.payment-card span {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #333;
-}
-
-/* Hover effect */
 .payment-card:hover {
   transform: translateY(-4px);
   border-color: #1a5c37;
-  background: #f9fffb;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background-color: #f9fffb;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
+.payment-card:hover .payment-icon { transform: scale(1.15); color:var(--step-primary); }
 
-.payment-card:hover .payment-icon {
-  transform: scale(1.15);
-  color: #0e351f;
-}
-
-/* Selected state */
 .payment-card.selected {
-  border-color: #0e351f;
+  border-color: var(--step-primary);
   background: #e9fdf3;
   box-shadow: 0 6px 20px rgba(14, 53, 31, 0.25);
   transform: translateY(-6px);
 }
-
-.payment-card.selected .payment-icon {
-  color: #0e351f;
-}
+.payment-card.selected .payment-icon { color:var(--step-primary); }
 
 /* ===== Pay Now / Pay Later (Step 4) ===== */
+.timing-options { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin:1.25rem 0 0.5rem 0; }
+.timing-card {
+  flex:1; min-width:180px; max-width:240px; display:flex; flex-direction:column; align-items:center;
+  padding:1.1rem; border:2px solid #ddd; border-radius:12px; background:#fafafa; transition:all 0.3s ease;
+  text-align:center; box-sizing:border-box;
+}
+.timing-icon { width:46px; height:46px; display:grid; place-items:center; font-size:1.4rem; margin-bottom:0.4rem; }
+.timing-card span { font-weight:600; color:#333; }
+.timing-card small { color:#666; margin-top:0.25rem; }
+
+/* ===== Navigation Buttons ===== */
+.review-buttons {
+  display:flex; justify-content:space-between; margin-top:2rem; gap:1rem; box-sizing:border-box;
+}
+.review-buttons button { flex:1; padding:1rem; border-radius:10px; font-weight:600; cursor:pointer; border:none; transition:all 0.3s ease; }
+.review-buttons button[type="button"] { background:#cfcfcf; color:#333; }
+.review-buttons button[type="button"]:hover { background:#bbb; }
+.pay-button { background:var(--step-primary); color:#fff; }
+.pay-button:hover { background:#145c33; transform:translateY(-2px); }
+
+/* ===== Responsive / Mobile-first overrides ===== */
+
+/* General mobile tweaks (<= 768px) */
+@media (max-width: 768px) {
+  .checkout-page {
+    padding: 1rem;
+    max-width: 96%;
+    width: calc(100% - 4px);
+    box-sizing: border-box;
+  }
+
+  .checkout-page h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    padding-top: 6px;
+  }
+
+  /* keep stepper rules unchanged (you're intentionally not modifying them) */
+  /* smaller stepper on phones/tablets */
+  :root { --step-size: 34px; }
+
+  /* STEPPEr adjustments to fit smaller screens nicely */
+  :root {
+    --step-size: 34px;            /* smaller circles on most phones */
+  }
+
+  .stepper {
+    padding: 0 0.5rem;
+    max-width: 100%;
+    margin: 1rem auto;            /* tighten spacing above form */
+    align-items: center;
+  }
+
+  .stepper::before {
+    top: calc(var(--step-size) / 2);
+    left: 10px;                   /* keep small side gutters */
+    right: 10px;
+  }
+
+  .step-item .step-circle {
+    width: var(--step-size);
+    height: var(--step-size);
+  }
+
+  .step-title {
+    font-size: 0.75rem;
+    margin-top: 0.45rem;
+  }
+
+  /* make checkout card slightly roomier for payment section */
+  .checkout-section {
+    width: calc(100% - 20px); /* ~10px gutter each side */
+    max-width: 720px;
+    padding: 1.25rem;         /* a touch more vertical space */
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  .checkout-step h3 {
+    font-size: 1.18rem;
+    margin-bottom: 0.9rem;
+    text-align: left;
+  }
+
+  /* stacked form inputs */
+  .checkout-form {
+    display: block;
+    gap: 0.75rem;
+  }
+  .checkout-form .row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .checkout-form input,
+  .checkout-form textarea,
+  .checkout-form select {
+    width: 100%;
+    padding: 0.9rem 0.95rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* buttons full width */
+  .next-button,
+  .review-buttons button,
+  .z-checkout-btn,
+  .pay-button {
+    width: 100%;
+    padding: 0.95rem;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  /* cart summary adjustments */
+  .cart-summary-list,
+  .cart-summary-item {
+    padding: 0.6rem 0;
+  }
+  .cart-summary-item img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .total-amount {
+    text-align: center;
+    font-size: 1.15rem;
+    margin-top: 0.75rem;
+  }
+
+  /*
+    PAYMENT CARDS: compact 2x2 grid, increased card size so they
+    look roomier and don't overlap. These settings intentionally
+    increase min-width, padding and icon scale.
+  */
+  .payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;                       /* slightly larger gap */
+    justify-content: center;
+    margin: 1rem auto 1.4rem;
+    width: calc(100% - 18px);         /* keep inside checkout card gutters */
+    max-width: 420px;                 /* allow cards to be a bit wider without overflowing */
+    align-items: stretch;
+    box-sizing: border-box;
+  }
+
+  .payment-card {
+    padding: 0.9rem 0.9rem;           /* larger padding for touch targets */
+    border-radius: 12px;
+    min-height: 86px;                 /* increased height for roominess */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+
+  .payment-card .payment-icon {
+    font-size: 1.5rem;                /* slightly larger icon */
+    margin-bottom: 8px;
+  }
+
+  .payment-card span {
+    font-size: 0.92rem;               /* slightly larger text */
+    line-height: 1.1;
+  }
+
+  /* selected + hover: don't translate on mobile; only use shadow/border */
+  .payment-card:hover,
+  .payment-card.selected {
+    transform: none !important;
+    border-color: var(--step-primary);
+    box-shadow: 0 8px 24px rgba(14, 53, 31, 0.10);
+    z-index: 2;
+  }
+
+  .payment-card.selected {
+    background: linear-gradient(180deg, #f1fbf4, #eaf7ee);
+  }
+
+  /*
+    TIMING OPTIONS (mobile) – fixed to grid, equal heights, no overlap.
+    NOTE: we intentionally *do not* change payment-card selectors above.
+  */
+  /* TIMING OPTIONS — stacked vertically on mobile (replace existing timing-options block) */
 .timing-options {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 1.25rem 0 0.5rem 0;
+  flex-direction: column;         /* stack vertically */
+  gap: 0.8rem;
+  width: calc(100% - 18px);       /* same gutter as payment-options */
+  max-width: 420px;               /* keep inside checkout card gutters */
+  margin: 0.8rem auto 1rem;
+  align-items: stretch;
+  box-sizing: border-box;
+  justify-items: stretch;
 }
 
 .timing-card {
-  flex: 1;
-  min-width: 180px;
-  max-width: 240px;
+  width: 100%;                    /* full width of the stack */
+  box-sizing: border-box;
+  min-height: 72px;               /* comfortable touch target */
+  padding: 0.9rem 0.9rem;         /* same comfortable padding as payment cards */
+  border-radius: 12px;
+  border: 2px solid #ddd;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.1rem;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  cursor: pointer;
-  background-color: #fafafa;
-  transition: all 0.3s ease;
+  justify-content: center;
   text-align: center;
+  background: linear-gradient(145deg, #ffffff, #f9f9f9);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
 }
 
-.timing-card input[type="radio"] {
-  display: none;
-}
 
-.timing-icon {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  font-size: 1.4rem;
-  margin-bottom: 0.4rem;
-}
 
-.timing-card span {
-  font-weight: 600;
-  color: #333;
-}
-
-.timing-card small {
-  color: #666;
-  margin-top: 0.25rem;
-}
-
-.timing-card:hover {
-  border-color: #0e351f;
-  background-color: #f1fdf7;
-}
-
-.timing-card.selected {
-  border-color: #0e351f;
-  background-color: #e6f8f0;
-  box-shadow: 0 0 12px rgba(14, 53, 31, 0.25);
-}
-
-/* mobile */
-@media (max-width: 640px) {
-  .payment-options,
-  .timing-options {
+  /* stack review buttons */
+  .review-buttons {
     flex-direction: column;
-    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .review-buttons button {
+    width: 100%;
+  }
+
+  /* safety: prevent horizontal overflow */
+  html,
+  body {
+    overflow-x: hidden;
   }
 }
+
+
+/* very small phones (<= 440px) tighten a bit more */
+@media (max-width: 440px) {
+  :root { --step-size: 34px; }
+  .checkout-page { padding: 0.7rem; }
+  .checkout-page h2 { font-size: 1.55rem; margin-bottom: 0.8rem; }
+  .checkout-section { padding: 0.85rem; border-radius: 10px; }
+  .step-title { font-size: 0.7rem; }
+  .checkout-form input { padding: 0.8rem; font-size: 0.93rem; }
+  .next-button { padding: 0.85rem; font-size: 0.98rem; }
+  /* slightly smaller payment card grid */
+  .payment-options { max-width: 340px; gap:0.5rem; width: calc(100% - 15px); }
+  .payment-card { min-height: 66px; padding:0.55rem 0.6rem; }
+}
+
+/* keep larger-screen desktop rules intact (no overrides beyond this point) */

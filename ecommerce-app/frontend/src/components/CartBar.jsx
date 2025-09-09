@@ -14,7 +14,7 @@ const CartBar = () => {
   // ❌ Do NOT show the bar if no items or we're on the /cart page
   if (
         itemCount === 0 ||
-        ['/cart', '/profile', '/checkout', '/signup', '/login', '/about', '/contact','/edit-profile','/complete-account', '/account-details', '/SignupForm'].includes(location.pathname)
+        ['/cart', '/profile', '/checkout', '/checkout-wholesale','/signup', '/login', '/about', '/contact','/edit-profile','/complete-account', '/account-details', '/SignupForm'].includes(location.pathname)
         ) return null;
 
 
