@@ -28,10 +28,16 @@ const Checkout = () => {
   // Payment method state
   const [paymentMethod, setPaymentMethod] = useState("gpay");
 
+  // UI: wallet balance (frontend-only; backend will actually deduct)
+  const [walletBalance, setWalletBalance] = useState(0);
+
   useEffect(() => {
-    if (location.state?.orderType) {
-      setCheckoutMode(location.state.orderType);
-    }
+    if (location.state?.orderType) setCheckoutMode(location.state.orderType);
+
+    // Read wallet balance from sessionStorage/localStorage if available (optional)
+    const stored = sessionStorage.getItem("walletBalance") || localStorage.getItem("walletBalance");
+    const numeric = stored ? parseFloat(stored) : 0;
+    setWalletBalance(Number.isFinite(numeric) ? numeric : 0);
   }, [location.state]);
 
   const deliveryZipCodes = ["403001", "403002", "403003"];
@@ -82,17 +88,12 @@ const Checkout = () => {
   const lineSubtotal = (item) => toNumber(item.price) * (item.quantity || 0);
 
   const calculateTotal = () =>
-    cartItems
-      .reduce((sum, item) => sum + lineSubtotal(item), 0)
-      .toFixed(2);
+    cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0).toFixed(2);
 
   const handleNext = (e) => {
     e.preventDefault();
-    if (step === 1 && isFormValid()) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    }
+    if (step === 1 && isFormValid()) setStep(2);
+    else if (step === 2) setStep(3);
   };
 
   const handlePlaceOrder = () => {
@@ -103,18 +104,17 @@ const Checkout = () => {
 
     const newOrder = {
       id: Date.now(),
-      timestamp: Date.now(),                 // ✅ precise time for the timer
-      date: new Date().toLocaleString(),     // readable
+      timestamp: Date.now(),
+      date: new Date().toLocaleString(),
       status: "Confirmed",
       mode: checkoutMode,
       total: `₹${calculateTotal()}`,
       items: cartItems,
       customer: formData,
-      // Only include payment if you actually have paymentMethod state in this file:
-      ...(typeof paymentMethod !== "undefined" ? { payment: paymentMethod } : {}),
-      // DO NOT include userType here unless you defined it in this file
+      payment: paymentMethod,
     };
 
+    // NOTE: backend should handle wallet deduction if paymentMethod === "balance"
     addOrder(newOrder);
     sessionStorage.setItem("justPlacedOrderId", String(newOrder.id));
     sessionStorage.setItem("justPlacedOrderMode", newOrder.mode);
@@ -122,13 +122,11 @@ const Checkout = () => {
     navigate("/orders");
   };
 
-
   return (
     <div className="checkout-page">
       <h2>Checkout</h2>
 
-
-      {/* Stepper (1–3) */}
+      {/* Stepper */}
       <div className="stepper">
         <div className={`step-item ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
           <div className="step-circle">1</div>
@@ -148,76 +146,27 @@ const Checkout = () => {
       {step === 1 && (
         <form className="checkout-form" onSubmit={handleNext}>
           <div className="row">
-            <input
-              name="firstName"
-              placeholder="First Name"
-              value={formData.firstName}
-              required
-              onChange={handleChange}
-            />
-            <input
-              name="lastName"
-              placeholder="Last Name"
-              value={formData.lastName}
-              required
-              onChange={handleChange}
-            />
+            <input name="firstName" placeholder="First Name" value={formData.firstName} required onChange={handleChange} />
+            <input name="lastName" placeholder="Last Name" value={formData.lastName} required onChange={handleChange} />
           </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            required
-            onChange={handleChange}
-          />
+          <input type="email" name="email" placeholder="Email Address" value={formData.email} required onChange={handleChange} />
 
           <div className="row">
-            <input
-              name="zip"
-              placeholder="Zip/Postal Code"
-              value={formData.zip}
-              required
-              onChange={handleChange}
-            />
+            <input name="zip" placeholder="Zip/Postal Code" value={formData.zip} required onChange={handleChange} />
           </div>
 
           {checkoutMode === "delivery" && (
             <>
-              <input
-                name="address"
-                placeholder="Street Address"
-                value={formData.address}
-                required
-                onChange={handleChange}
-              />
+              <input name="address" placeholder="Street Address" value={formData.address} required onChange={handleChange} />
               <div className="row">
-                <input
-                  name="state"
-                  placeholder="State/Province"
-                  value={formData.state}
-                  required
-                  onChange={handleChange}
-                />
-                <input
-                  name="city"
-                  placeholder="City"
-                  value={formData.city}
-                  required
-                  onChange={handleChange}
-                />
+                <input name="state" placeholder="State/Province" value={formData.state} required onChange={handleChange} />
+                <input name="city" placeholder="City" value={formData.city} required onChange={handleChange} />
               </div>
             </>
           )}
 
-          <input
-            name="phone"
-            placeholder="Phone Number"
-            value={formData.phone}
-            required
-            onChange={handleChange}
-          />
+          <input name="phone" placeholder="Phone Number" value={formData.phone} required onChange={handleChange} />
 
           {deliveryError && <p className="error">{deliveryError}</p>}
 
@@ -291,42 +240,47 @@ const Checkout = () => {
         <div className="checkout-section">
           <h3>Select Payment Method</h3>
           <div className="payment-options">
-            <label
-              className={`payment-card ${paymentMethod === "gpay" ? "selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value="gpay"
-                checked={paymentMethod === "gpay"}
-                onChange={() => setPaymentMethod("gpay")}
-              />
+            <label className={`payment-card ${paymentMethod === "gpay" ? "selected" : ""}`}>
+              <input type="radio" name="payment" value="gpay" checked={paymentMethod === "gpay"} onChange={() => setPaymentMethod("gpay")} />
               <div className="payment-icon">💳</div>
               <span>Google Pay</span>
             </label>
 
-            <label
-              className={`payment-card ${paymentMethod === "cod" ? "selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value="cod"
-                checked={paymentMethod === "cod"}
-                onChange={() => setPaymentMethod("cod")}
-              />
+            <label className={`payment-card ${paymentMethod === "cod" ? "selected" : ""}`}>
+              <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
               <div className="payment-icon">💵</div>
               <span>Cash on Delivery</span>
             </label>
+
+            {/* New: Pay with Balance (UI only) */}
+            <label className={`payment-card ${paymentMethod === "balance" ? "selected" : ""}`}>
+              <input
+                type="radio"
+                name="payment"
+                value="balance"
+                checked={paymentMethod === "balance"}
+                onChange={() => setPaymentMethod("balance")}
+              />
+              <div className="payment-icon">🪙</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <span>Pay with Balance</span>
+                <small style={{ color: "#666", marginTop: 4 }}>
+                  Wallet Balance: <strong>₹{walletBalance.toFixed(2)}</strong>
+                </small>
+              </div>
+            </label>
           </div>
-            
-          <p className="total-amount" style={{ textAlign: "left", marginTop: "0" }}>
+
+          <p className="total-amount" style={{ textAlign: "left", marginTop: 8 }}>
             Total: <strong>₹{calculateTotal()}</strong>
           </p>
 
           <div className="customer-details" style={{ marginTop: "1rem" }}>
             <h4>Payment</h4>
-            <p>Method: {paymentMethod === "gpay" ? "Google Pay" : "Cash on Delivery"}</p>
+            <p>
+              Method:{" "}
+              {paymentMethod === "gpay" ? "Google Pay" : paymentMethod === "cod" ? "Cash on Delivery" : "Pay with Balance"}
+            </p>
           </div>
 
           <div className="review-buttons">

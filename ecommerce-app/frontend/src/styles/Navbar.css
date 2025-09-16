@@ -117,29 +117,40 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* ========== Profile Dropdown (Sibling like mobile menu) ========== */
+/* ================= Profile (avatar container) ================= */
 .profile-dropdown-container {
+  position: relative;
+  display: inline-block;
   cursor: pointer;
+  z-index: 1100;
 }
 
-/* Default (Desktop dropdown) */
-/* Desktop dropdown (aligned under avatar, sticks with navbar) */
+.profile-dropdown-container .avatar-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ================= Desktop Dropdown (for non-fixed usage fallback) ================= */
 .profile-dropdown {
-  position: absolute;   /* ✅ anchor to navbar container */
-  top: 9%;            /* just below navbar */
-  right: 6.3rem;          /* align with avatar */
+  position: absolute;   /* remains available if used - kept for compatibility */
+  top: 9%;
+  right: 6.3rem;
   background: #fff;
   border-radius: 12px;
   min-width: 180px;
   max-width: 220px;
   padding: 10px 0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 2000;
+  z-index: 1700; /* ensure above overlay */
   display: flex;
   flex-direction: column;
   animation: dropdownFade 0.25s ease;
 }
-
 
 .profile-dropdown button {
   padding: 12px 16px;
@@ -159,6 +170,39 @@
   border-radius: 8px;
 }
 
+/* ================= Fixed Dropdown (overlaying page) ================= */
+.profile-dropdown-fixed {
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  animation: dropdownFade 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1400; /* sits above overlay but below hamburger (if needed) */
+}
+
+.profile-dropdown-fixed .dropdown-item,
+.profile-dropdown-fixed button {
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.95rem;
+  color: #333;
+  transition: background 0.15s, color 0.15s;
+  border-radius: 8px;
+}
+.profile-dropdown-fixed .dropdown-item:hover,
+.profile-dropdown-fixed button:hover {
+  background-color: #f6f7f6;
+  color: #175023;
+  font-weight: 600;
+}
+
 /* Animations */
 @keyframes dropdownFade {
   from { opacity: 0; transform: translateY(-10px); }
@@ -170,6 +214,23 @@
   to { opacity: 1; }
 }
 
+/* ================= Overlay ================= */
+/* default: don't capture pointer events unless .open — prevents accidental blocking */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 1200; /* below dropdown (1400) and below hamburger (1600) */
+  background: rgba(0,0,0,0.0); /* transparent until open */
+  pointer-events: none; /* don't block clicks when not open */
+  transition: background 0.18s ease;
+}
+.menu-overlay.open {
+  display: block;
+  pointer-events: auto; /* allow capturing clicks only when open */
+  background: rgba(0, 0, 0, 0.35);
+}
+
 /* ================= MOBILE ================= */
 @media (max-width: 768px) {
   /* Hide desktop links */
@@ -177,16 +238,7 @@
     display: none;
   }
 
-  /* Profile dropdown full-width on mobile */
-  .profile-dropdown {
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 90%;          /* ✅ centered and wide */
-    max-width: none;
-  }
-
-  /* Mobile dropdown menu */
+  /* Mobile dropdown menu (sticky under navbar) */
   .mobile-menu {
     display: none;
     flex-direction: column;
@@ -195,11 +247,10 @@
     padding: 1.5rem 0;
     gap: 1.2rem;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 999;
+    z-index: 1650;
     position: sticky;
     top: 64px;
 
-    /* animation prep */
     opacity: 0;
     transform: translateY(-10px);
     transition: all 0.3s ease;
@@ -229,20 +280,17 @@
     border-bottom: none;
   }
 
-  /* Background overlay */
-  .menu-overlay {
-    display: none;
-  }
+  /* Mobile overlay dim background has stronger opacity for clarity */
   .menu-overlay.open {
     display: block;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.35);
-    z-index: 998;
+    z-index: 1200;
     animation: fadeIn 0.3s ease;
   }
 
-  /* Hamburger */
+  /* Hamburger visible and above overlays */
   .hamburger {
     display: flex;
     flex-direction: column;
@@ -250,7 +298,7 @@
     gap: 4px;
     cursor: pointer;
     margin-left: 1rem;
-    z-index: 1001; /* above dropdown */
+    z-index: 1600; /* ensure it's above overlays & dropdowns for clickability */
   }
   .hamburger span {
     width: 24px;
@@ -269,3 +317,27 @@
     transform: rotate(-45deg) translate(6px, -6px);
   }
 }
+
+/* ================= Tablet / Mid-size tweaks ================= */
+@media (min-width: 900px) and (max-width: 1180px) {
+  .profile-dropdown-fixed,
+  .profile-dropdown {
+    min-width: 150px;
+    top: calc(100% + 8px);
+  }
+}
+
+/* ================= Misc helpers ================= */
+.navbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* ensure elements that should be above overlays have higher z-index if needed */
+.mobile-menu { z-index: 1650; }
+.profile-dropdown { z-index: 1700; }
+.profile-dropdown-fixed { z-index: 1400; }
+.hamburger { z-index: 1600; }
+
+/* End of Navbar.css */

@@ -1,104 +1,142 @@
-import React, { useState } from 'react';
-import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import { dummyProducts } from '../components/ProductGrid';
-import '../styles/Cart.css';
+// src/pages/Cart.jsx
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useUser } from "../context/UserContext";
+import { useOrders } from "../context/OrdersContext";
+import { dummyProducts } from "../components/ProductGrid";
+import "../styles/Cart.css";
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, addToCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, addToCart, clearCart, addMultipleToCart } =
+    useCart();
   const { user } = useUser();
+  const { updateOrder, cancelOrder } = useOrders();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [showOptionModal, setShowOptionModal] = useState(false);
   const [availableOptions, setAvailableOptions] = useState([]);
+  const [userType, setUserType] = useState("retail");
+  const [editMode, setEditMode] = useState(false);
+  const [editOrderId, setEditOrderId] = useState(null);
 
-  // 🔹 Retail / Wholesale toggle (frontend only)
-  const [userType, setUserType] = useState("retail"); // default = retail
+  const toggleUserType = () =>
+    setUserType((p) => (p === "retail" ? "wholesale" : "retail"));
 
-  const toggleUserType = () => {
-    setUserType((prev) => (prev === "retail" ? "wholesale" : "retail"));
-  };
+  useEffect(() => {
+    if (location.state?.editOrderId) {
+      setEditMode(true);
+      setEditOrderId(location.state.editOrderId);
+      clearCart();
+      addMultipleToCart(location.state.items || []);
+    }
+  }, [location.state]);
 
-  // Mock delivery pincodes
   const deliveryPincodes = ["560001", "110001"];
   const userPincode = "560001";
 
+  const calculateTotal = () =>
+    cartItems
+      .reduce((t, i) => t + parseFloat(i.finalPrice) * i.quantity, 0)
+      .toFixed(2);
+
+  const handleConfirmChanges = () => {
+    updateOrder(editOrderId, cartItems);
+    clearCart();
+    navigate("/orders");
+  };
+
+  const handleCancelOrder = () => {
+    if (!window.confirm("Cancel this order?")) return;
+    cancelOrder(editOrderId);
+    clearCart();
+    navigate("/orders");
+  };
+
   const handleCheckout = () => {
     if (!user) {
-      alert('Please log in to proceed to checkout.');
-      navigate('/login?redirectTo=/checkout'); // keeping as-is
+      alert("Please log in to proceed to checkout.");
+      navigate("/login?redirectTo=/checkout");
       return;
     }
-
     if (deliveryPincodes.includes(userPincode)) {
       setAvailableOptions(["Delivery", "Takeaway"]);
       setShowOptionModal(true);
     } else {
       alert("Delivery is not available for your location. Please choose Takeaway.");
-      // ✅ Route based on userType when delivery not available
-      if (userType === "wholesale") {
-        navigate('/checkout-wholesale', { state: { orderType: "takeaway", userType } });
-      } else {
-        navigate('/checkout', { state: { orderType: "takeaway", userType } });
-      }
+      navigate(userType === "wholesale" ? "/checkout-wholesale" : "/checkout", {
+        state: { orderType: "takeaway", userType },
+      });
     }
   };
 
-  const calculateTotal = () => {
-    return cartItems
-      .reduce((total, item) => {
-        const price = parseFloat(item.price);
-        return total + price * item.quantity;
-      }, 0)
-      .toFixed(2);
-  };
-
-  // Recommendation logic
   const recommendedProducts = dummyProducts
     .filter(
       (p) =>
-        !cartItems.find((item) => item._id === p._id) &&
-        (p.category === 'exotic' || p.category === 'vegetable')
+        !cartItems.find((c) => c._id === p._id) &&
+        (p.category === "exotic" || p.category === "vegetable")
     )
     .slice(0, 4);
 
   return (
     <div className="cart-container">
       <div className="cart-header">
-        <h2 className="cart-heading">Your Cart</h2>
-
-        {/* 🔹 Retail / Wholesale Toggle */}
-        <div className="user-type-toggle">
-          <span className={userType === "retail" ? "active" : ""}>Retail</span>
-          <label className="switch">
-            <input type="checkbox" checked={userType === "wholesale"} onChange={toggleUserType} />
-            <span className="slider"></span>
-          </label>
-          <span className={userType === "wholesale" ? "active" : ""}>Wholesale</span>
-        </div>
+        {cartItems.length > 0 && !editMode && (
+          <button
+            className="top-continue-btn"
+            onClick={() => navigate("/shop")}
+          >
+            ← Continue Shopping
+          </button>
+        )}
+        <h2 className="cart-heading">
+          {editMode ? "Edit Order" : "Your Cart"}
+        </h2>
+        {!editMode && (
+          <div className="user-type-toggle">
+            <span className={userType === "retail" ? "active" : ""}>Retail</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={userType === "wholesale"}
+                onChange={toggleUserType}
+              />
+              <span className="slider" />
+            </label>
+            <span className={userType === "wholesale" ? "active" : ""}>
+              Wholesale
+            </span>
+          </div>
+        )}
       </div>
 
       {cartItems.length === 0 ? (
         <div className="empty-cart">
           <div className="empty-cart-icon">🛒</div>
-          <p>No items in cart</p>
-          <button
-            className="start-shopping-btn"
-            onClick={() => navigate("/shop")}
-          >
-            Start Shopping
-          </button>
+          <p>No items {editMode ? "in this order" : "in cart"}</p>
+          {!editMode && (
+            <button
+              className="start-shopping-btn"
+              onClick={() => navigate("/shop")}
+            >
+              Start Shopping
+            </button>
+          )}
         </div>
       ) : (
         <>
-          {/* Cart Items */}
           {cartItems.map((item) => (
-            <div key={item._id} className="cart-item">
+            <div
+              key={`${item._id}-${item.selectedWeight}`}
+              className="cart-item"
+            >
               <img src={item.image} alt={item.name} />
               <div className="item-details">
                 <h4>{item.name}</h4>
-                <p>Price: {item.price}</p>
+                <p>
+                  Price: ₹{item.finalPrice} / {item.selectedWeight}
+                </p>
               </div>
 
               <div className="item-actions">
@@ -106,7 +144,11 @@ const Cart = () => {
                   <button
                     className="qty-btn"
                     onClick={() =>
-                      updateQuantity(item._id, item.quantity - 1)
+                      updateQuantity(
+                        item._id,
+                        item.selectedWeight,
+                        item.quantity - 1
+                      )
                     }
                     disabled={item.quantity <= 1}
                   >
@@ -116,7 +158,11 @@ const Cart = () => {
                   <button
                     className="qty-btn"
                     onClick={() =>
-                      updateQuantity(item._id, item.quantity + 1)
+                      updateQuantity(
+                        item._id,
+                        item.selectedWeight,
+                        item.quantity + 1
+                      )
                     }
                   >
                     +
@@ -124,7 +170,7 @@ const Cart = () => {
                 </div>
                 <button
                   className="remove-btn"
-                  onClick={() => removeFromCart(item._id)}
+                  onClick={() => removeFromCart(item._id, item.selectedWeight)}
                 >
                   Remove
                 </button>
@@ -132,52 +178,72 @@ const Cart = () => {
             </div>
           ))}
 
-          {/* 🔹 Recommended Section */}
-          {recommendedProducts.length > 0 && (
+          {recommendedProducts.length > 0 && !editMode && (
             <div className="recommended-section">
               <h3>You may also like</h3>
               <div className="recommended-grid">
-                {recommendedProducts.map((product) => (
-                  <div key={product._id} className="recommended-card">
-                    <img src={product.image} alt={product.name} />
-                    <h4>{product.name}</h4>
-                    <p>{product.price}</p>
-                    <button onClick={() => addToCart(product)}>
-                      Add to Cart
-                    </button>
+                {recommendedProducts.map((p) => (
+                  <div key={p._id} className="recommended-card">
+                    <img src={p.image} alt={p.name} />
+                    <h4>{p.name}</h4>
+                    <p>{p.price}</p>
+                    <button onClick={() => addToCart(p)}>Add to Cart</button>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Checkout Summary */}
           <div className="cart-summary">
             <h3>Total: ₹{calculateTotal()}</h3>
             <div className="cart-buttons">
-              <button className="continue-shopping-btn" onClick={() => navigate('/shop')}>
-                Continue Shopping
-              </button>
-              <button className="z-checkout-btn" onClick={handleCheckout}>
-                Proceed to Checkout
-              </button>
+              {editMode ? (
+                <>
+                  <button
+                    className="cancel-order-btn"
+                    onClick={handleCancelOrder}
+                  >
+                    Cancel Order
+                  </button>
+                  <button
+                    className="confirm-changes-btn"
+                    onClick={handleConfirmChanges}
+                  >
+                    Confirm Changes
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="continue-shopping-btn" onClick={clearCart}>
+                    Empty Cart
+                  </button>
+                  <button className="z-checkout-btn" onClick={handleCheckout}>
+                    Proceed to Checkout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </>
       )}
 
-      {/* Option Modal */}
-      {showOptionModal && (
-        <div className="popup-overlay">
-          <div className="popup-content">
+      {showOptionModal && !editMode && (
+        <div
+          className="popup-overlay"
+          onClick={() => setShowOptionModal(false)}
+        >
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <h3>Choose Order Type</h3>
             {availableOptions.includes("Delivery") && (
               <button
                 className="popup-btn"
                 onClick={() =>
-                  userType === "wholesale"
-                    ? navigate('/checkout-wholesale', { state: { orderType: "delivery", userType } })
-                    : navigate('/checkout', { state: { orderType: "delivery", userType } })
+                  navigate(
+                    userType === "wholesale"
+                      ? "/checkout-wholesale"
+                      : "/checkout",
+                    { state: { orderType: "delivery", userType } }
+                  )
                 }
               >
                 Delivery
@@ -187,9 +253,12 @@ const Cart = () => {
               <button
                 className="popup-btn"
                 onClick={() =>
-                  userType === "wholesale"
-                    ? navigate('/checkout-wholesale', { state: { orderType: "takeaway", userType } })
-                    : navigate('/checkout', { state: { orderType: "takeaway", userType } })
+                  navigate(
+                    userType === "wholesale"
+                      ? "/checkout-wholesale"
+                      : "/checkout",
+                    { state: { orderType: "takeaway", userType } }
+                  )
                 }
               >
                 Takeaway

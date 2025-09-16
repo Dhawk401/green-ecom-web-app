@@ -61,14 +61,21 @@
 @media (max-width: 640px) {
   .cart-bottom-bar {
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.4rem;              /* smaller gap */
     text-align: center;
-    padding: 1rem;
+    padding: 0.6rem 0.8rem;   /* reduce padding */
+    font-size: 0.85rem;       /* slightly smaller text */
+  }
+
+  .cart-bottom-bar span {
+    font-size: 0.9rem;        /* text smaller but readable */
   }
 
   .view-cart-btn {
     width: 100%;
-    padding: 0.7rem;
-    font-size: 1rem;
+    padding: 0.55rem 1rem;    /* smaller button height */
+    font-size: 0.9rem;        /* shrink button text */
+    border-radius: 6px;       /* tighter pill */
   }
 }
+

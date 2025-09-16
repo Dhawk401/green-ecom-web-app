@@ -1,58 +1,136 @@
-/* Product Grid */
+/* ================= GRID-RELATED STYLES (drop into your ProductGrid.css or main CSS)
+   NOTE: This file contains only grid & container related rules.
+   Product-card specific styles should remain in productcard.css as you requested.
+*/
+
+/* ================= VARIABLES (easy tuning) ================= */
+:root{
+  --grid-gap-col: 2rem;
+  --grid-gap-row: 2rem;
+  --container-max: 1200px;
+  --mobile-gutter: 0.75rem;
+}
+
+/* ================= BASE / CONTAINER ================= */
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;      /* centers container horizontally */
+  box-sizing: border-box;
+  padding-inline-start: 1rem;
+  padding-inline-end: var(--desktop-gutter-end);
+  width: 100%;
+}
+
+/* ================= PRODUCT GRID (desktop-first, explicit column counts) */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+
+  /* Desktop default: 4 equal columns */
+  grid-template-columns: repeat(4, 1fr);
+
+  /* use explicit row / column gap */
+  column-gap: var(--grid-gap-col);
+  row-gap: var(--grid-gap-row);
+
+  /* center grid inside container and center items in their cells */
+  justify-content: center;
+  justify-items: center;
+  align-items: start;
+
+  max-width: var(--container-max);
+  margin: 1.2rem auto 0 auto;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.product-card {
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-  text-align: center;
-  transition: transform 0.2s ease;
-}
-
-.product-card:hover {
-  transform: scale(1.03);
-}
-
-.product-card img {
+/* Make grid cells stretch so cards can fill their cell width */
+.product-grid > * {
   width: 100%;
-  height: 200px;
-  object-fit: cover;
 }
 
-.product-card h3 {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
+/* ================= BREAKPOINTS: 4 → 3 → 2 (iPad mini stays at 3) ================= */
+
+/* Large desktop down to small desktop: still 4 columns (default) */
+
+/* Medium screens: 3 columns (desktop -> tablet) */
+@media (max-width: 1199px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-.product-card p {
-  margin-bottom: 1rem;
-  font-weight: bold;
+/* iPad Mini / small tablets range: specifically keep 3 columns
+   iPad Mini widths (portrait/landscape) often fall between ~600px — 820px.
+   This ensures iPad mini gets 3 cards per row. */
+@media (min-width: 600px) and (max-width: 820px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 1.25rem;
+    row-gap: 1.25rem;
+  }
+
+  .container {
+    padding-inline-end: 1rem; /* slightly smaller gutter for small tablets */
+  }
 }
 
-.product-card button {
-  background-color: #0e351f;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+/* Small screens / phones: 2 columns (never 1)
+   Lowered threshold so small tablets like iPad mini remain at 3 columns. */
+@media (max-width: 599px) {
+  :root {
+    --grid-gap-col: 1rem;
+    --grid-gap-row: 1.2rem;
+  }
+
+  .container {
+    padding-inline-start: var(--mobile-gutter);
+    padding-inline-end: var(--mobile-gutter);
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: var(--grid-gap-col);
+    row-gap: var(--grid-gap-row);
+    margin-top: 1rem;
+  }
 }
 
-.product-card button:hover {
-  background-color: #227e2d;
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+/* Very narrow phones: keep 2 columns but reduce gaps so layout fits */
+@media (max-width: 420px) {
+  :root {
+    --grid-gap-col: 0.8rem;
+    --grid-gap-row: 0.9rem;
+  }
+
+  .product-grid {
+    column-gap: var(--grid-gap-col);
+    row-gap: var(--grid-gap-row);
+  }
 }
 
-.product-card button:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+/* Nest Hub / small landscape smart displays (approx ~1024px wide) —
+   keep 3 columns there so cards don't get too spread out */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 1rem;
+  }
+
+  .container {
+    padding-inline-end: 1rem; /* reduce right gutter on smart displays */
+  }
+}
+
+/* Large ultra-wide screens: still 4 columns with slightly larger gaps */
+@media (min-width: 1600px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: calc(var(--grid-gap-col) * 1);
+  }
+}
+
+/* Focus outline for grid children */
+.product-grid > *:focus {
+  outline: 3px solid rgba(0,0,0,0.08);
+  outline-offset: 4px;
 }

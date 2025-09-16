@@ -1,146 +1,243 @@
-/* src/styles/ProductCard.css */
+/* ================= PRODUCT CARD (uniform height, responsive) ================= */
 
+/* Variables for easy tuning */
+:root {
+  --card-max-width: 220px;
+  --card-padding: 1rem;
+  --card-radius: 10px;
+  --card-border: 1px solid #ddd;
+  --card-bg: #fff;
+  --shadow-small: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
+  --accent: #0e351f;
+  --accent-dark: #188d4b;
+}
+
+/* ================= Card Container ================= */
 .product-card {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
+  width: 100%;
+  max-width: var(--card-max-width);
+  height: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.5rem;
+
+  padding: var(--card-padding);
+  margin: 0 auto;
+
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-small);
+
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: transform, box-shadow;
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* Hover / focus */
+.product-card:hover,
+.product-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+.product-card:focus {
+  outline: 3px solid rgba(14,53,31,0.12);
+  outline-offset: 4px;
+}
+
+/* ================= Link & Content ================= */
 .product-link {
-  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   color: inherit;
+  text-decoration: none;
+  flex: 1 1 auto; /* grows, pushes button down */
 }
 
-/* Ensure both plain <img> and LazyImage wrapper (.product-thumb) get the same sizing */
-.product-link img,
-.product-thumb,
+.product-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: calc(var(--card-radius) - 2px);
+  background: #f9f9f9;
+  flex-shrink: 0;
+}
 .product-thumb img {
   width: 100%;
-  /* constant height: change this value to suit your design */
-  height: 180px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
   display: block;
 }
 
-/* keep wrapper overflow hidden so placeholder + real image don't break layout */
-.product-thumb {
-  overflow: hidden;
-  position: relative;
-}
-
-/* wrapper */
-.quantity-controls1 {
+.product-info {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #0e351f;
-  border-radius: 10px;
-  overflow: hidden;
-  width: fit-content;
-  height: 38px;               /* slightly taller for balance */
-  margin: 0 auto;             /* keep centered */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  border: 1px solid rgba(255,255,255,0.12);
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 auto;
 }
 
-/* buttons */
-.qty-btn1 {
-  appearance: none;
-  background: transparent;
-  color: #fff;
-  border: 0;
-  width: 40px;                /* consistent hit area */
-  height: 38px;               /* match wrapper height */
-  cursor: pointer;
-  font-size: 1.15rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color .15s ease, transform .05s ease;
-  /* removed margin-top that caused misalignment */
-  margin-top: 13px;
-}
-
-.qty-btn1:hover {
-  background-color: rgba(255,255,255,0.12);
-}
-
-.qty-btn1:active {
-  transform: translateY(1px);
-}
-
-.qty-btn1:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
-
-/* focus ring for keyboard users */
-.qty-btn1:focus-visible {
-  outline: 0;
-  box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 3px rgba(255,255,255,0.25);
-  border-radius: 8px;
-}
-
-/* counter */
-.quantity-controls1 span {
-  padding: 0 .9rem;
-  min-width: 2.2rem;          /* ensures stable width for 2+ digits */
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+.product-card h3 {
   font-size: 1rem;
   font-weight: 600;
-  letter-spacing: .2px;
-  font-variant-numeric: tabular-nums; /* aligned numbers */
-  border-left: 1px solid rgba(255,255,255,0.14);
-  border-right: 1px solid rgba(255,255,255,0.14);
+  margin: 0;
+  color: #222;
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
+  line-height: 1.3;
+  min-height: 2.6em;  /* reserve space for 2 lines */
+}
+.product-card p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: #444;
 }
 
+/* ================= Weight Toggle ================= */
+.weight-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.weight-btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 55px;
+}
+.weight-btn:hover { border-color: var(--accent); background: #f4f9f6; }
+.weight-btn.active {
+  background: #0e351f;
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(14,53,31,0.15);
+}
+
+/* ================= Add to Cart ================= */
 .add-to-cart-btn {
+  margin-top: auto;
+  align-self: center;
   display: inline-block;
-  background: #0e351f; /* dark green */
+
+  background: #0e351f;
   color: #fff;
   border: none;
-  border-radius: 15px;
-  padding: 0.75rem 1.8rem;
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(14, 53, 31, 0.25);
-  letter-spacing: 0.5px;
-}
 
+  min-width: 140px; /* default desktop */
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(14,53,31,0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
 .add-to-cart-btn:hover {
-  background: #145c33; /* lighter green */
+  background: var(--accent-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(14, 53, 31, 0.3);
+  box-shadow: 0 6px 14px rgba(14,53,31,0.25);
+}
+.add-to-cart-btn:active { transform: scale(0.96); }
+
+/* ================= Quantity Controls ================= */
+.quantity-controls1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.6rem auto 0 auto;
+  width: fit-content;
+}
+.qty-btn1 {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.qty-btn1:hover { background: var(--accent-dark); }
+.quantity-controls1 span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #222;
+  min-width: 24px;
+  text-align: center;
 }
 
-.add-to-cart-btn:active {
-  transform: scale(0.97);
-  background: #0c2b19;
+/* ================= Responsive Tweaks ================= */
+@media (max-width: 420px) {
+  :root { --card-max-width: 160px; }
+  .product-card { padding: 0.7rem; }
+  .add-to-cart-btn { min-width: 92px; font-size: 0.78rem; padding: 0.36rem 0.6rem; }
+}
+@media (max-width: 768px) {
+  :root { --card-max-width: 160px; }
+  .product-card { padding: 0.8rem; }
+  .weight-btn { font-size: 0.75rem; padding: 0.25rem 0.6rem; min-width: 45px; }
+  .quantity-controls1 { gap: 0.4rem; }
+  .quantity-controls1 span { font-size: 0.9rem; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  :root { --card-max-width: 200px; }
+  .product-card { padding: 0.85rem; }
+  .add-to-cart-btn { min-width: 120px; }
+}
+@media (min-width: 1200px) {
+  :root { --card-max-width: 220px; }
+  .product-card { padding: 1rem; }
 }
 
-.add-to-cart-btn:disabled {
-  background: #a5b1a7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
+/* ================= Device-specific overrides ================= */
 
-
-/* optional: compact tweak on very small screens */
-@media (max-width: 380px) {
-  .quantity-controls1 {
-    height: 36px;
+/* iPhone 14 Pro Max (~430px wide) */
+@media (max-width: 450px) {
+  .add-to-cart-btn {
+    min-width: 110px;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: center;
   }
+}
+
+/* Surface Duo (~540px wide per screen) */
+@media (min-width: 451px) and (max-width: 600px) {
+  .add-to-cart-btn {
+    min-width: 115px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* iPad Mini (portrait 768px, landscape 1024px) */
+@media (min-width: 600px) and (max-width: 1100px) {
+  .add-to-cart-btn {
+    min-width: 120px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* ================= Reduced motion ================= */
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .add-to-cart-btn,
   .qty-btn1,
-  .quantity-controls1 span {
-    height: 36px;
-  }
+  .weight-btn { transition: none !important; }
 }

@@ -22,3 +22,26 @@
   height: 450px;
   object-fit: cover;
 }
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 768px) {
+  .hero {
+    height: 220px;          /* 🔧 shorter hero height */
+    font-size: 1.2rem;      /* 🔧 smaller text */
+    padding: 0 1rem;        /* 🔧 prevent text overflow */
+  }
+
+  .hero-slider {
+    height: 220px;          /* 🔧 match hero height */
+  }
+
+  .slide-image {
+    height: 220px;          /* 🔧 shrink images */
+  }
+
+  .hero-slider h1,
+  .hero-slider h2,
+  .hero-slider p {
+    font-size: 0.85rem;     /* 🔧 shrink overlay text */
+  }
+}

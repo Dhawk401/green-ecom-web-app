@@ -45,10 +45,24 @@
   }
 }
 
+/* ================= CATEGORY BUTTONS WRAPPER ================= */
+.category-buttons {
+  display: flex;
+  flex-wrap: nowrap;        /* ✅ one row */
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;         /* ✅ enable scroll on small screens */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;    /* hide scrollbar (Firefox) */
+}
+
+.category-buttons::-webkit-scrollbar {
+  display: none;            /* hide scrollbar (Chrome/Safari) */
+}
+
 /* ================= CATEGORY BUTTONS ================= */
 .category-btn {
-  padding: 0.5rem 1rem;
-  margin-right: 1rem;
+  padding: 0.5rem 1.2rem;
   background-color: #f4f6f5;
   border: none;
   border-radius: 30px;
@@ -57,6 +71,8 @@
   font-size: 0.95rem;
   color: #333;
   transition: all 0.25s ease;
+  white-space: nowrap;       /* ✅ prevent text wrapping */
+  flex-shrink: 0;            /* ✅ don’t let buttons shrink */
 }
 
 .category-btn:hover {
@@ -69,6 +85,7 @@
   color: #fff;
   box-shadow: 0 3px 10px rgba(14, 53, 31, 0.3);
 }
+
 
 /* ================= PRODUCT DETAIL ================= */
 .product-detail-container {
@@ -86,6 +103,14 @@
 @media (min-width: 768px) {
   .product-detail-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .category-buttons {
+    justify-content: flex-start; /* ✅ align left but scrollable */
+    gap: 0.6rem;
+  }
+
+  .category-btn {
+    font-size: 0.85rem;   /* ✅ smaller text */
   }
 }
 

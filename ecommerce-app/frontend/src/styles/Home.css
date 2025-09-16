@@ -11,12 +11,23 @@ a {
   color: inherit;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
+/* Default section spacing */
 .home-wrapper > * {
   margin-bottom: 4rem;
+}
+
+/* Reduce gap only after hero */
+.home-wrapper > .hero-slider {
+  margin-bottom: 2rem;   /* 🔧 smaller gap under slider */
+}
+
+/* ================= MOBILE FIX ================= */
+@media (max-width: 768px) {
+  .home-wrapper > * {
+    margin-bottom: 2.5rem;   /* 🔧 reduce overall section spacing */
+  }
+
+  .home-wrapper > .hero-slider {
+    margin-bottom: 1rem;     /* 🔧 extra small gap under slider */
+  }
 }
