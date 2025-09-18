@@ -1,15 +1,14 @@
 // src/components/ProductCard.jsx
 import React, { useState, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
+import { useUser } from '../context/UserContext';
 import { Link } from 'react-router-dom';
 import LazyImage from './LazyImage';
 import '../styles/ProductCard.css';
 
 function getOptimizedPaths(originalPath) {
   if (!originalPath || typeof originalPath !== 'string') return null;
-
   const normalized = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
-
   if (normalized.startsWith('assets/optimized/')) {
     const withoutExt = normalized.replace(/\.[^/.]+$/, '');
     const base = `/${withoutExt}`;
@@ -19,7 +18,6 @@ function getOptimizedPaths(originalPath) {
       placeholder: `${base}-small.jpg`,
     };
   }
-
   const rel = normalized.replace(/^assets\//, '');
   const parsed = rel.replace(/\.[^/.]+$/, '');
   const base = `/assets/optimized/${parsed}`;
@@ -73,6 +71,12 @@ const formatPrice = (val) => {
 
 const ProductCard = ({ product }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
+  const { user, preferredUserType } = useUser(); // read preferredUserType fallback
+  const currentUserType = (user && user.userType) || preferredUserType || 'retail';
+
+  // multiplier used for wholesale pricing: wholesale = base * WHOLESALE_MULTIPLIER
+  // change this value to tweak the wholesale discount. (0.85 => 15% off)
+  const WHOLESALE_MULTIPLIER = 0.50;
 
   const optimized = getOptimizedPaths(product.image);
   const originalSrc =
@@ -82,27 +86,54 @@ const ProductCard = ({ product }) => {
 
   const priceOptions = useMemo(() => buildPriceOptions(product.price), [product.price]);
 
+  // apply userType adjustment to a numeric price
+  const adjustPriceForType = (raw) => {
+    const n = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/,/g, ''));
+    if (Number.isFinite(n)) {
+      if (currentUserType === 'wholesale') {
+        return +(n * WHOLESALE_MULTIPLIER);
+      }
+      // retail: show full base price
+      return n;
+    }
+    // non-numeric (string like "N/A"), return original
+    return raw;
+  };
+
+  // Build adjusted options (numeric or kept as string if non-numeric)
+  const priceOptionsAdjusted = useMemo(() => {
+    const out = {};
+    Object.keys(priceOptions).forEach((k) => {
+      const raw = priceOptions[k];
+      const adjusted = adjustPriceForType(raw);
+      out[k] = adjusted;
+    });
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceOptions, currentUserType]);
+
   const orderedKeys = useMemo(() => {
-    const keys = Object.keys(priceOptions);
+    const keys = Object.keys(priceOptionsAdjusted);
     if (keys.includes('500g') && keys.includes('1kg')) {
       return ['500g', '1kg'];
     }
     return keys;
-  }, [priceOptions]);
+  }, [priceOptionsAdjusted]);
 
   const [selectedWeight, setSelectedWeight] = useState(orderedKeys[0]);
 
-  // 🔑 Match by both _id and selectedWeight
+  // Match by both _id and selectedWeight
   const cartItem = cartItems.find(
     item => item._id === product._id && item.selectedWeight === selectedWeight
   );
 
   const handleAddToCart = () => {
-    const rawPrice = priceOptions[selectedWeight];
+    const rawPrice = priceOptionsAdjusted[selectedWeight];
+    const finalPrice = (typeof rawPrice === 'number' && Number.isFinite(rawPrice)) ? +rawPrice : rawPrice;
     const finalProduct = {
       ...product,
       selectedWeight,
-      finalPrice: rawPrice,
+      finalPrice,
     };
     addToCart(finalProduct);
   };
@@ -123,12 +154,12 @@ const ProductCard = ({ product }) => {
 
         <h3>{product.name}</h3>
         <p>
-          ₹{formatPrice(priceOptions[selectedWeight])} / {selectedWeight}
+          ₹{formatPrice(priceOptionsAdjusted[selectedWeight])} / {selectedWeight}
         </p>
       </Link>
 
-      {/* ✅ Weight toggle buttons */}
-      {Object.keys(priceOptions).length > 1 && (
+      {/* Weight toggle buttons */}
+      {Object.keys(priceOptionsAdjusted).length > 1 && (
         <div className="weight-toggle">
           {orderedKeys.map((w) => (
             <button

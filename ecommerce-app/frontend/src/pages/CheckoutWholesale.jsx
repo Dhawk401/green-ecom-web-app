@@ -1,3 +1,4 @@
+// src/pages/CheckoutWholesale.jsx
 import React, { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { useOrders } from "../context/OrdersContext";
@@ -21,32 +22,26 @@ const CheckoutWholesale = () => {
     phone: "",
   });
 
-  // "delivery" | "takeaway" from Cart via state (kept same as retail)
   const [checkoutMode, setCheckoutMode] = useState("delivery");
+  const [userType, setUserType] = useState("wholesale");
   const [deliveryError, setDeliveryError] = useState("");
   const [step, setStep] = useState(1);
 
   // Wholesale extras
-  const [paymentMethod, setPaymentMethod] = useState("upi"); // step 3 (multiple options)
-  const [paymentTiming, setPaymentTiming] = useState("now"); // step 4: "now" | "later"
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [paymentTiming, setPaymentTiming] = useState("now");
 
-  // pick up orderType & userType from Cart (if passed)
-  const [userType, setUserType] = useState(() => location.state?.userType || "wholesale");
-
-  // UI: wallet balance (frontend-only; backend will actually deduct if used)
   const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     if (location.state?.orderType) setCheckoutMode(location.state.orderType);
-    if (location.state?.userType) setUserType(location.state.userType);
+    if (location.state?.userType) setUserType(location.state.userType || "wholesale");
 
-    // read wallet balance if available (sessionStorage/localStorage)
     const stored = sessionStorage.getItem("walletBalance") || localStorage.getItem("walletBalance");
     const numeric = stored ? parseFloat(stored) : 0;
     setWalletBalance(Number.isFinite(numeric) ? numeric : 0);
   }, [location.state]);
 
-  // keep same mock delivery validation as retail (only enforced if mode is delivery)
   const deliveryZipCodes = ["403001", "403002", "403003"];
 
   const handleChange = (e) => {
@@ -65,7 +60,6 @@ const CheckoutWholesale = () => {
     }
   };
 
-  // validation mirrors retail
   const isFormValid = () => {
     if (checkoutMode === "delivery") {
       return (
@@ -88,16 +82,21 @@ const CheckoutWholesale = () => {
     );
   };
 
-  // number helpers (same as retail)
   const toNumber = (v) => {
     const n = parseFloat(v);
     return Number.isFinite(n) ? n : 0;
   };
-  const lineSubtotal = (item) => toNumber(item.price) * (item.quantity || 0);
+
+  const lineSubtotal = (item) => {
+    // wholesale items may store finalPrice; fall back to price
+    const unit = toNumber(item.finalPrice ?? item.price ?? item.unitPrice ?? 0);
+    const qty = Number(item.quantity || 0);
+    return unit * qty;
+  };
+
   const calculateTotal = () =>
     cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0).toFixed(2);
 
-  // navigation across steps
   const goNext = (e) => {
     e?.preventDefault?.();
     if (step === 1 && !isFormValid()) return;
@@ -105,7 +104,6 @@ const CheckoutWholesale = () => {
   };
   const goBack = () => setStep((s) => Math.max(s - 1, 1));
 
-  // place order
   const handlePlaceOrder = () => {
     if (cartItems.length === 0) {
       alert("Your cart is empty!");
@@ -128,7 +126,6 @@ const CheckoutWholesale = () => {
       },
     };
 
-    // NOTE: backend should validate & deduct wallet when payment.method === "balance"
     addOrder(newOrder);
     sessionStorage.setItem("justPlacedOrderId", String(newOrder.id));
     sessionStorage.setItem("justPlacedOrderMode", newOrder.mode);
@@ -138,9 +135,8 @@ const CheckoutWholesale = () => {
 
   return (
     <div className="checkout-page">
-      <h2>Checkout</h2>
+      <h2>Wholesale Checkout</h2>
 
-      {/* Stepper (1–4) */}
       <div className="stepper">
         <div className={`step-item ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
           <div className="step-circle">1</div>
@@ -160,7 +156,6 @@ const CheckoutWholesale = () => {
         </div>
       </div>
 
-      {/* STEP 1: Details */}
       {step === 1 && (
         <form className="checkout-form" onSubmit={goNext}>
           <div className="row">
@@ -194,13 +189,12 @@ const CheckoutWholesale = () => {
         </form>
       )}
 
-      {/* STEP 2: Review */}
       {step === 2 && (
         <div className="order-summary">
           <h3>Order Summary</h3>
           <ul className="cart-summary-list">
             {cartItems.map((item) => {
-              const unit = toNumber(item.price);
+              const unit = toNumber(item.finalPrice ?? item.price ?? 0);
               const qty = item.quantity || 0;
               const subtotal = (unit * qty).toFixed(2);
               return (
@@ -218,89 +212,62 @@ const CheckoutWholesale = () => {
           </ul>
 
           <p className="total-amount" style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>
-              User: <span className="badge-user-type">{(userType || "wholesale").toUpperCase()}</span>
-            </span>
+            <span>User: <span className="badge-user-type">{(userType || "wholesale").toUpperCase()}</span></span>
             <span>Total: <strong>₹{calculateTotal()}</strong></span>
           </p>
 
           <div className="customer-details">
             <h4>Customer Details</h4>
-            <p>
-              {formData.firstName} {formData.lastName}
-            </p>
+            <p>{formData.firstName} {formData.lastName}</p>
             <p>{formData.email}</p>
             <p>{formData.phone}</p>
             {checkoutMode === "delivery" ? (
               <>
                 <p>{formData.address}</p>
-                <p>
-                  {formData.city}, {formData.state}, {formData.zip}
-                </p>
+                <p>{formData.city}, {formData.state}, {formData.zip}</p>
               </>
             ) : (
-              <p>
-                <em>Takeaway order</em>
-              </p>
+              <p><em>Takeaway order</em></p>
             )}
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={goBack}>
-              Back
-            </button>
-            <button className="next-button" onClick={goNext}>
-              Proceed to Payment
-            </button>
+            <button type="button" onClick={goBack}>Back</button>
+            <button className="next-button" onClick={goNext}>Proceed to Payment</button>
           </div>
         </div>
       )}
 
-      {/* STEP 3: Payment Method (multiple options + Pay with Balance UI) */}
       {step === 3 && (
         <div className="checkout-section">
           <h3>Select Payment Method</h3>
-
-          <p className="total-amount" style={{ marginTop: 0 }}>
-            Total: <strong>₹{calculateTotal()}</strong>
-          </p>
+          <p className="total-amount" style={{ marginTop: 0 }}>Total: <strong>₹{calculateTotal()}</strong></p>
 
           <div className="payment-options">
-            {/* Cash */}
             <label className={`payment-card ${paymentMethod === "cash" ? "selected" : ""}`}>
               <input type="radio" name="payment" value="cash" checked={paymentMethod === "cash"} onChange={() => setPaymentMethod("cash")} />
               <div className="payment-icon">💵</div>
               <span>Cash</span>
             </label>
 
-            {/* UPI */}
             <label className={`payment-card ${paymentMethod === "upi" ? "selected" : ""}`}>
               <input type="radio" name="payment" value="upi" checked={paymentMethod === "upi"} onChange={() => setPaymentMethod("upi")} />
               <div className="payment-icon">📱</div>
               <span>GPay / UPI</span>
             </label>
 
-            {/* Bank Transfer */}
             <label className={`payment-card ${paymentMethod === "banktransfer" ? "selected" : ""}`}>
-              <input
-                type="radio"
-                name="payment"
-                value="banktransfer"
-                checked={paymentMethod === "banktransfer"}
-                onChange={() => setPaymentMethod("banktransfer")}
-              />
+              <input type="radio" name="payment" value="banktransfer" checked={paymentMethod === "banktransfer"} onChange={() => setPaymentMethod("banktransfer")} />
               <div className="payment-icon">🏦</div>
               <span>Bank Transfer</span>
             </label>
 
-            {/* Cheque */}
             <label className={`payment-card ${paymentMethod === "cheque" ? "selected" : ""}`}>
               <input type="radio" name="payment" value="cheque" checked={paymentMethod === "cheque"} onChange={() => setPaymentMethod("cheque")} />
               <div className="payment-icon">✒️</div>
               <span>Cheque</span>
             </label>
 
-            {/* New: Pay with Balance (UI only) */}
             <label className={`payment-card ${paymentMethod === "balance" ? "selected" : ""}`}>
               <input type="radio" name="payment" value="balance" checked={paymentMethod === "balance"} onChange={() => setPaymentMethod("balance")} />
               <div className="payment-icon">🪙</div>
@@ -314,17 +281,12 @@ const CheckoutWholesale = () => {
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={goBack}>
-              Back
-            </button>
-            <button className="next-button" onClick={goNext}>
-              Next
-            </button>
+            <button type="button" onClick={goBack}>Back</button>
+            <button className="next-button" onClick={goNext}>Next</button>
           </div>
         </div>
       )}
 
-      {/* STEP 4: Pay Now or Pay Later */}
       {step === 4 && (
         <div className="checkout-section">
           <h3>When would you like to pay?</h3>
@@ -346,12 +308,8 @@ const CheckoutWholesale = () => {
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={goBack}>
-              Back
-            </button>
-            <button className="pay-button" onClick={handlePlaceOrder}>
-              Place Order
-            </button>
+            <button type="button" onClick={goBack}>Back</button>
+            <button className="pay-button" onClick={handlePlaceOrder}>Place Order</button>
           </div>
         </div>
       )}

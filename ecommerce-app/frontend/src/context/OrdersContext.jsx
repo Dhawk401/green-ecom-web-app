@@ -6,16 +6,41 @@ const OrdersContext = createContext();
 
 export const OrdersProvider = ({ children }) => {
   const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem("orders");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("orders");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to read orders from localStorage:", e);
+      return [];
+    }
   });
 
-  const [justPlacedOrderIds, setJustPlacedOrderIds] = useState([]);
+  const [justPlacedOrderIds, setJustPlacedOrderIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("justPlacedOrderIds");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
   const { addMultipleToCart } = useCart();
 
   useEffect(() => {
-    localStorage.setItem("orders", JSON.stringify(orders));
+    try {
+      localStorage.setItem("orders", JSON.stringify(orders));
+    } catch (e) {
+      console.error("Failed to save orders to localStorage:", e);
+    }
   }, [orders]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("justPlacedOrderIds", JSON.stringify(justPlacedOrderIds));
+    } catch (e) {
+      console.error("Failed to save justPlacedOrderIds:", e);
+    }
+  }, [justPlacedOrderIds]);
 
   const addOrder = (newOrder) => {
     const orderWithRating = { ...newOrder, rating: null };
@@ -26,7 +51,12 @@ export const OrdersProvider = ({ children }) => {
   const clearOrders = () => {
     setOrders([]);
     setJustPlacedOrderIds([]);
-    localStorage.removeItem("orders");
+    try {
+      localStorage.removeItem("orders");
+      localStorage.removeItem("justPlacedOrderIds");
+    } catch (e) {
+      console.error("Failed to clear orders from localStorage:", e);
+    }
   };
 
   const reorderItems = (items) => {
@@ -47,30 +77,50 @@ export const OrdersProvider = ({ children }) => {
     );
   };
 
-  /** 🆕 update an order's items */
+  // Helper: parse numeric price from item.finalPrice or item.price (supports "30/kg" style)
+  const getNumericPrice = (item) => {
+    const candidate = item.finalPrice ?? item.price ?? 0;
+    if (typeof candidate === "number" && Number.isFinite(candidate)) return candidate;
+    if (typeof candidate === "string") {
+      const m = candidate.match(/([\d,.]+)/);
+      if (m) {
+        const num = parseFloat(m[1].replace(/,/g, ""));
+        return Number.isFinite(num) ? num : 0;
+      }
+    }
+    return 0;
+  };
+
+  // Update order items (edit) - now also recalculates order.total
   const updateOrder = (orderId, updatedItems) => {
-  // calculate new total
-  const newTotal = updatedItems.reduce(
-    (sum, it) => sum + (parseFloat(it.finalPrice) || 0) * (it.quantity || 1),
-    0
-  ).toFixed(2);
+    // Normalize items array (ensure quantity present)
+    const items = (updatedItems || []).map((it) => ({
+      ...it,
+      quantity: it.quantity || 1,
+    }));
 
-  setOrders((prev) =>
-    prev.map((o) =>
-      o.id === orderId
-        ? {
-            ...o,
-            items: updatedItems,
-            total: newTotal,   // 🆕 update the total
-            updatedAt: Date.now(),
-          }
-        : o
-    )
-  );
-};
+    const totalNumeric = items.reduce((s, it) => {
+      const price = getNumericPrice(it);
+      const qty = Number(it.quantity || 0);
+      return s + price * qty;
+    }, 0);
 
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              items,
+              total: `₹${totalNumeric.toFixed(2)}`,
+              updatedAt: Date.now(),
+            }
+          : o
+      )
+    );
+    // keep justPlacedOrderIds as-is (you may change this if desired)
+  };
 
-  /** 🆕 cancel (delete) an order entirely */
+  // Cancel (delete) order
   const cancelOrder = (orderId) => {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
     setJustPlacedOrderIds((prev) => prev.filter((id) => id !== orderId));

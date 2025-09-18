@@ -128,7 +128,7 @@ const Orders = () => {
           next[o.id] = computeRemainingSeconds(o);
         });
 
-        // Also remove entries for orders no longer in currentOrders
+        // remove entries for orders no longer current
         Object.keys(next).forEach((id) => {
           if (!currentOrders.find((o) => String(o.id) === String(id))) {
             delete next[id];
@@ -136,7 +136,6 @@ const Orders = () => {
         });
 
         // After computing next map, check for newly-expired orders that need proof
-        // find any order where remaining === 0, needs proof, no saved proof/status, and we are not already showing modal
         if (!showProofModal) {
           for (const o of currentOrders) {
             const rem = next[o.id];
@@ -163,21 +162,19 @@ const Orders = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orders]); // rerun when orders change (so interval sees new orders)
+  }, [orders]);
 
   // --- file upload handlers (compress before saving) ---
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // read file into data URL
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result;
       const img = new Image();
       img.onload = () => {
         try {
-          // target max width - smaller -> smaller base64
           const MAX_WIDTH = 800;
           let targetWidth = img.width;
           let targetHeight = img.height;
@@ -192,13 +189,10 @@ const Orders = () => {
           canvas.height = targetHeight;
           const ctx = canvas.getContext("2d");
 
-          // draw image to canvas
           ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-          // compress to jpeg at 0.7 quality (you can tweak)
           const compressed = canvas.toDataURL("image/jpeg", 0.7);
 
-          // debug log size in KB
           console.log("Original size (approx chars):", String(dataUrl).length);
           console.log("Compressed size (bytes):", Math.round(compressed.length * 3 / 4 / 1024), "KB (approx)");
 
@@ -237,7 +231,6 @@ const Orders = () => {
 
       setProofUploading(true);
 
-      // Save image data to localStorage
       try {
         localStorage.setItem(`paymentProof_${activeOrderForProof.id}`, proofPreview);
         setProofStatus(activeOrderForProof.id, "uploaded");
@@ -255,7 +248,6 @@ const Orders = () => {
       setShowProofModal(false);
       setProofUploading(false);
 
-      // give visible feedback
       alert("Payment proof uploaded successfully.");
     } catch (err) {
       console.error("handleSubmitProof unexpected error:", err);
@@ -273,7 +265,6 @@ const Orders = () => {
   const handleEditOrder = (order) => {
     clearCart();
     addMultipleToCart(order.items.map((it) => ({ ...it })));
-    // send order id and items to cart page so it enters edit mode
     navigate("/cart", { state: { editOrderId: order.id, items: order.items } });
   };
 

@@ -1,3 +1,4 @@
+//shop page
 import React, { useState } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import '../styles/Shop.css'; // Assuming you have a CSS file for styles

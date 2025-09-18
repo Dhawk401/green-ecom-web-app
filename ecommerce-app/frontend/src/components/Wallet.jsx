@@ -1,15 +1,19 @@
+// src/pages/Wallet.jsx
 import React, { useState } from "react";
 import CountUp from "react-countup";
 import { useNavigate } from "react-router-dom";
 import "../styles/Wallet.css";
+import { useUser } from "../context/UserContext";
 
 const Wallet = () => {
+  const { user, switchUserType, preferredUserType, setPreferredUserType } = useUser();
+  const currentUserType = (user && user.userType) || preferredUserType || "retail";
+
   const [balance, setBalance] = useState(5000); // Example balance
   const [showTopup, setShowTopup] = useState(false);
   const [amount, setAmount] = useState("");
   const [proofPreview, setProofPreview] = useState("");
-  const [userType, setUserType] = useState("retail"); // 🔹 Retail by default
-  const [paymentMethod, setPaymentMethod] = useState("gpay"); // default for retail
+  const [paymentMethod, setPaymentMethod] = useState(currentUserType === "wholesale" ? "upi" : "gpay"); // default depends on userType
   const navigate = useNavigate();
 
   // Dummy transactions
@@ -25,8 +29,25 @@ const Wallet = () => {
   const [requests, setRequests] = useState([]);
 
   const toggleUserType = () => {
-    setUserType((prev) => (prev === "retail" ? "wholesale" : "retail"));
-    setPaymentMethod("gpay"); // reset to default when switching
+    const next = currentUserType === "retail" ? "wholesale" : "retail";
+
+    // Persist preference for guests and keep logged-in users in sync
+    setPreferredUserType(next);
+
+    // If a real user is logged in, also update their account userType
+    if (user) {
+      // keep user object in sync (UserContext.switchUserType will update both preferred and user)
+      try {
+        switchUserType(next);
+      } catch (e) {
+        // fallback: ensure at least preference set
+        console.error("switchUserType failed:", e);
+        setPreferredUserType(next);
+      }
+    }
+
+    // update default payment method depending on type
+    setPaymentMethod(next === "wholesale" ? "upi" : "gpay");
   };
 
   const handleFileChange = (e) => {
@@ -54,7 +75,7 @@ const Wallet = () => {
     setShowTopup(false);
     setAmount("");
     setProofPreview("");
-    setPaymentMethod("gpay");
+    setPaymentMethod(currentUserType === "wholesale" ? "upi" : "gpay");
     alert("Top-up request submitted. Awaiting admin verification.");
   };
 
@@ -65,18 +86,18 @@ const Wallet = () => {
         ← Back
       </button>
 
-      {/* 🔹 Retail / Wholesale Toggle */}
+      {/* Retail / Wholesale Toggle */}
       <div className="user-type-toggle" style={{ marginBottom: "1rem" }}>
-        <span className={userType === "retail" ? "active" : ""}>Retail</span>
+        <span className={currentUserType === "retail" ? "active" : ""}>Retail</span>
         <label className="switch">
           <input
             type="checkbox"
-            checked={userType === "wholesale"}
+            checked={currentUserType === "wholesale"}
             onChange={toggleUserType}
           />
           <span className="slider"></span>
         </label>
-        <span className={userType === "wholesale" ? "active" : ""}>
+        <span className={currentUserType === "wholesale" ? "active" : ""}>
           Wholesale
         </span>
       </div>
@@ -173,7 +194,6 @@ const Wallet = () => {
                 />
               </div>
 
-              {/* 🔹 Payment Method (depends on userType) */}
               <div className="field">
                 <span>Payment Method</span>
                 <select
@@ -181,7 +201,7 @@ const Wallet = () => {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 >
                   <option value="gpay">GPay / UPI</option>
-                  {userType === "wholesale" && (
+                  {currentUserType === "wholesale" && (
                     <option value="bank">Bank Transfer</option>
                   )}
                 </select>

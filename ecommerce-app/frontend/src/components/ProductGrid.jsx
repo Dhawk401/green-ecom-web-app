@@ -8,7 +8,7 @@ export const dummyProducts = [
     _id: '1',
     name: 'Tomato',
     image: '/assets/cat-tomato.jpg',
-    price: '30/kg',
+    price: '40/kg',
     category: 'vegetable',
   },
   {

@@ -1,3 +1,4 @@
+// src/pages/Checkout.jsx
 import React, { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { useOrders } from "../context/OrdersContext";
@@ -21,20 +22,22 @@ const Checkout = () => {
     phone: "",
   });
 
+  // receive orderType and userType from Cart (if provided)
   const [checkoutMode, setCheckoutMode] = useState("delivery");
+  const [userType, setUserType] = useState("retail");
   const [deliveryError, setDeliveryError] = useState("");
   const [step, setStep] = useState(1);
 
   // Payment method state
   const [paymentMethod, setPaymentMethod] = useState("gpay");
 
-  // UI: wallet balance (frontend-only; backend will actually deduct)
+  // UI: wallet balance (frontend-only)
   const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     if (location.state?.orderType) setCheckoutMode(location.state.orderType);
+    if (location.state?.userType) setUserType(location.state.userType);
 
-    // Read wallet balance from sessionStorage/localStorage if available (optional)
     const stored = sessionStorage.getItem("walletBalance") || localStorage.getItem("walletBalance");
     const numeric = stored ? parseFloat(stored) : 0;
     setWalletBalance(Number.isFinite(numeric) ? numeric : 0);
@@ -85,15 +88,26 @@ const Checkout = () => {
     return Number.isFinite(n) ? n : 0;
   };
 
-  const lineSubtotal = (item) => toNumber(item.price) * (item.quantity || 0);
+  // try to prefer finalPrice (product-level) else parse numeric price
+  const lineSubtotal = (item) => {
+    const unit = toNumber(item.finalPrice ?? item.price ?? item.unitPrice ?? 0);
+    const qty = Number(item.quantity || 0);
+    return unit * qty;
+  };
 
   const calculateTotal = () =>
     cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0).toFixed(2);
 
   const handleNext = (e) => {
-    e.preventDefault();
-    if (step === 1 && isFormValid()) setStep(2);
-    else if (step === 2) setStep(3);
+    e?.preventDefault?.();
+    if (step === 1) {
+      if (!isFormValid()) return;
+      setStep(2);
+      return;
+    }
+    if (step === 2) {
+      setStep(3);
+    }
   };
 
   const handlePlaceOrder = () => {
@@ -111,10 +125,13 @@ const Checkout = () => {
       total: `₹${calculateTotal()}`,
       items: cartItems,
       customer: formData,
-      payment: paymentMethod,
+      payment: {
+        method: paymentMethod,
+        timing: "now",
+      },
+      userType: userType || "retail",
     };
 
-    // NOTE: backend should handle wallet deduction if paymentMethod === "balance"
     addOrder(newOrder);
     sessionStorage.setItem("justPlacedOrderId", String(newOrder.id));
     sessionStorage.setItem("justPlacedOrderMode", newOrder.mode);
@@ -126,7 +143,6 @@ const Checkout = () => {
     <div className="checkout-page">
       <h2>Checkout</h2>
 
-      {/* Stepper */}
       <div className="stepper">
         <div className={`step-item ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
           <div className="step-circle">1</div>
@@ -136,13 +152,12 @@ const Checkout = () => {
           <div className="step-circle">2</div>
           <p className="step-title">Review</p>
         </div>
-        <div className={`step-item ${step > 3 ? "completed" : step === 3 ? "active" : ""}`}>
+        <div className={`step-item ${step === 3 ? "active" : ""}`}>
           <div className="step-circle">3</div>
           <p className="step-title">Payment</p>
         </div>
       </div>
 
-      {/* Step 1: Customer Details */}
       {step === 1 && (
         <form className="checkout-form" onSubmit={handleNext}>
           <div className="row">
@@ -176,22 +191,21 @@ const Checkout = () => {
         </form>
       )}
 
-      {/* Step 2: Order Summary */}
       {step === 2 && (
         <div className="order-summary">
           <h3>Order Summary</h3>
           <ul className="cart-summary-list">
             {cartItems.map((item) => {
-              const unit = toNumber(item.price);
+              const unit = lineSubtotal({ ...item, quantity: 1 }); // subtotal per 1 item
               const qty = item.quantity || 0;
-              const subtotal = (unit * qty).toFixed(2);
+              const subtotal = (toNumber(unit) * qty).toFixed(2);
               return (
                 <li key={item._id || item.id} className="cart-summary-item">
                   {item.image && <img src={item.image} alt={item.name} />}
                   <div>
                     <strong>{item.name}</strong>
                     <p>
-                      ₹{unit.toFixed(2)} × {qty} = <b>₹{subtotal}</b>
+                      ₹{toNumber(item.finalPrice ?? item.price ?? 0).toFixed(2)} × {qty} = <b>₹{subtotal}</b>
                     </p>
                   </div>
                 </li>
@@ -205,37 +219,26 @@ const Checkout = () => {
 
           <div className="customer-details">
             <h4>Customer Details</h4>
-            <p>
-              {formData.firstName} {formData.lastName}
-            </p>
+            <p>{formData.firstName} {formData.lastName}</p>
             <p>{formData.email}</p>
             <p>{formData.phone}</p>
             {checkoutMode === "delivery" ? (
               <>
                 <p>{formData.address}</p>
-                <p>
-                  {formData.city}, {formData.state}, {formData.zip}
-                </p>
+                <p>{formData.city}, {formData.state}, {formData.zip}</p>
               </>
             ) : (
-              <p>
-                <em>Takeaway order</em>
-              </p>
+              <p><em>Takeaway order</em></p>
             )}
           </div>
 
           <div className="review-buttons">
-            <button type="button" onClick={() => setStep(1)}>
-              Back
-            </button>
-            <button className="next-button" onClick={() => setStep(3)}>
-              Proceed to Payment
-            </button>
+            <button type="button" onClick={() => setStep(1)}>Back</button>
+            <button className="next-button" onClick={() => setStep(3)}>Proceed to Payment</button>
           </div>
         </div>
       )}
 
-      {/* Step 3: Payment Method */}
       {step === 3 && (
         <div className="checkout-section">
           <h3>Select Payment Method</h3>
@@ -252,7 +255,6 @@ const Checkout = () => {
               <span>Cash on Delivery</span>
             </label>
 
-            {/* New: Pay with Balance (UI only) */}
             <label className={`payment-card ${paymentMethod === "balance" ? "selected" : ""}`}>
               <input
                 type="radio"
@@ -275,21 +277,9 @@ const Checkout = () => {
             Total: <strong>₹{calculateTotal()}</strong>
           </p>
 
-          <div className="customer-details" style={{ marginTop: "1rem" }}>
-            <h4>Payment</h4>
-            <p>
-              Method:{" "}
-              {paymentMethod === "gpay" ? "Google Pay" : paymentMethod === "cod" ? "Cash on Delivery" : "Pay with Balance"}
-            </p>
-          </div>
-
           <div className="review-buttons">
-            <button type="button" onClick={() => setStep(2)}>
-              Back
-            </button>
-            <button className="pay-button" onClick={handlePlaceOrder}>
-              Place Order
-            </button>
+            <button type="button" onClick={() => setStep(2)}>Back</button>
+            <button className="pay-button" onClick={handlePlaceOrder}>Place Order</button>
           </div>
         </div>
       )}
