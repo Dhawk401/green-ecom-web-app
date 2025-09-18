@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const UserContext = createContext();
 
+// Default shape used when initializing or merging new data
 const defaultUser = {
   firstName: "",
   lastName: "",
@@ -15,7 +16,7 @@ const defaultUser = {
   zip: "",
   profileImage: "",
   gender: "",
-  userType: "retail",
+  userType: "retail",            // "retail" | "wholesale"
   availableAccounts: [],
   establishmentName: "",
   designation: "",
@@ -28,7 +29,7 @@ const defaultUser = {
 };
 
 export const UserProvider = ({ children }) => {
-  // load persisted user
+  // Load user from localStorage if present; else null means "not logged in"
   const [user, setUser] = useState(() => {
     try {
       const raw = localStorage.getItem("user");
@@ -38,35 +39,15 @@ export const UserProvider = ({ children }) => {
     }
   });
 
-  // NEW: preferredUserType persisted even for guests
-  const [preferredUserType, setPreferredUserType] = useState(() => {
-    try {
-      return localStorage.getItem("preferredUserType") || "retail";
-    } catch {
-      return "retail";
-    }
-  });
-
-  // persist user -> localStorage
+  // Persist to localStorage whenever user changes (and is not null)
   useEffect(() => {
-    try {
-      if (user) localStorage.setItem("user", JSON.stringify(user));
-      else localStorage.removeItem("user");
-    } catch (e) {
-      console.error("User persist error:", e);
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
     }
   }, [user]);
 
-  // persist preferredUserType -> localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("preferredUserType", preferredUserType);
-    } catch (e) {
-      console.error("preferredUserType persist error:", e);
-    }
-  }, [preferredUserType]);
-
-  // helper to produce normalized user object
   const finalizeUser = (base) => {
     const firstName = base.firstName ?? "";
     const lastName = base.lastName ?? "";
@@ -90,7 +71,8 @@ export const UserProvider = ({ children }) => {
   const updateUser = (updated) => {
     setUser((prevRaw) => {
       const prev = prevRaw ?? defaultUser;
-      const next = typeof updated === "function" ? updated(prev) : { ...prev, ...updated };
+      const next =
+        typeof updated === "function" ? updated(prev) : { ...prev, ...updated };
 
       if (!("name" in next)) {
         const firstName = next.firstName ?? prev.firstName ?? "";
@@ -105,7 +87,7 @@ export const UserProvider = ({ children }) => {
     });
   };
 
-  const addLinkedAccount = (type) => {
+  const addLinkedAccount = (type /* "retail" | "wholesale" */) => {
     setUser((prevRaw) => {
       const prev = prevRaw ?? defaultUser;
       const set = new Set(prev.availableAccounts || []);
@@ -114,38 +96,16 @@ export const UserProvider = ({ children }) => {
     });
   };
 
-  // Switch active userType (keeps user in sync but does not create accounts)
-  const switchUserType = (type) => {
-    // update preferred first (single source of truth)
-    setPreferredUserType(type);
-
+  const switchUserType = (type /* "retail" | "wholesale" */) => {
     setUser((prevRaw) => {
-      if (!prevRaw) return prevRaw; // if no logged-in user, don't create one here
       const prev = prevRaw ?? defaultUser;
       return finalizeUser({ ...prev, userType: type });
     });
   };
 
-  const setPreferredType = (type) => {
-    // call this from UI for guest toggles; it persists preference and also syncs existing user if present
-    setPreferredUserType(type);
-    if (user) {
-      // keep logged in user's type in sync
-      setUser((prevRaw) => (prevRaw ? finalizeUser({ ...prevRaw, userType: type }) : prevRaw));
-    }
-  };
-
   const logoutUser = () => {
     setUser(null);
   };
-
-  // When provider mounts: ensure that if a user exists, their userType is in sync with preferredUserType
-  useEffect(() => {
-    if (user && user.userType !== preferredUserType) {
-      setUser((prevRaw) => (prevRaw ? finalizeUser({ ...prevRaw, userType: preferredUserType }) : prevRaw));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
 
   return (
     <UserContext.Provider
@@ -156,9 +116,6 @@ export const UserProvider = ({ children }) => {
         logoutUser,
         addLinkedAccount,
         switchUserType,
-        // new exports:
-        preferredUserType,
-        setPreferredUserType: setPreferredType,
       }}
     >
       {children}

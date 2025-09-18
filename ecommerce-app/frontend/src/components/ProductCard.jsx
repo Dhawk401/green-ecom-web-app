@@ -1,25 +1,17 @@
 // src/components/ProductCard.jsx
-import React, { useState, useMemo } from 'react';
-import { useCart } from '../context/CartContext';
-import { useUser } from '../context/UserContext';
-import { Link } from 'react-router-dom';
-import LazyImage from './LazyImage';
-import '../styles/ProductCard.css';
+import React, { useState, useMemo } from "react";
+import { useCart } from "../context/CartContext";
+import { useUser } from "../context/UserContext";
+import { usePrice } from "../context/PriceContext";
+import { Link } from "react-router-dom";
+import LazyImage from "./LazyImage";
+import "../styles/ProductCard.css";
 
 function getOptimizedPaths(originalPath) {
-  if (!originalPath || typeof originalPath !== 'string') return null;
-  const normalized = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
-  if (normalized.startsWith('assets/optimized/')) {
-    const withoutExt = normalized.replace(/\.[^/.]+$/, '');
-    const base = `/${withoutExt}`;
-    return {
-      primary: `${base}-800.webp`,
-      srcSet: `${base}-400.webp 400w, ${base}-800.webp 800w, ${base}-1200.webp 1200w`,
-      placeholder: `${base}-small.jpg`,
-    };
-  }
-  const rel = normalized.replace(/^assets\//, '');
-  const parsed = rel.replace(/\.[^/.]+$/, '');
+  if (!originalPath || typeof originalPath !== "string") return null;
+  const normalized = originalPath.startsWith("/") ? originalPath.slice(1) : originalPath;
+  const rel = normalized.replace(/^assets\//, "");
+  const parsed = rel.replace(/\.[^/.]+$/, "");
   const base = `/assets/optimized/${parsed}`;
   return {
     primary: `${base}-800.webp`,
@@ -31,23 +23,23 @@ function getOptimizedPaths(originalPath) {
 function buildPriceOptions(price) {
   if (!price && price !== 0) return { "1": "N/A" };
 
-  if (typeof price === 'object') {
+  if (typeof price === "object") {
     return price;
   }
 
-  if (typeof price === 'number') {
+  if (typeof price === "number") {
     return { "1": price };
   }
 
-  if (typeof price === 'string') {
+  if (typeof price === "string") {
     const m = price.match(/([\d,.]+)\s*\/\s*([a-zA-Z]+)/);
     if (m) {
-      const rawNum = m[1].replace(/,/g, '');
+      const rawNum = m[1].replace(/,/g, "");
       const num = parseFloat(rawNum);
       const unit = m[2].toLowerCase();
 
       if (!Number.isNaN(num)) {
-        if (unit === 'kg' || unit === 'kgs') {
+        if (unit === "kg" || unit === "kgs") {
           return {
             "500g": +(num / 2),
             "1kg": +num,
@@ -62,86 +54,63 @@ function buildPriceOptions(price) {
   return { "1": String(price) };
 }
 
+const parseNumber = (v) => {
+  if (typeof v === "number") return v;
+  if (!v && v !== 0) return 0;
+  const m = String(v).match(/([\d,.]+)/);
+  if (!m) return 0;
+  return parseFloat(m[1].replace(/,/g, "")) || 0;
+};
+
 const formatPrice = (val) => {
-  if (typeof val === 'number' && !Number.isNaN(val)) {
-    return Number.isInteger(val) ? `${val}` : `${val.toFixed(2)}`;
-  }
-  return String(val);
+  const n = Number(val) || 0;
+  return Number.isInteger(n) ? `${n}` : n.toFixed(2);
 };
 
 const ProductCard = ({ product }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
-  const { user, preferredUserType } = useUser(); // read preferredUserType fallback
-  const currentUserType = (user && user.userType) || preferredUserType || 'retail';
-
-  // multiplier used for wholesale pricing: wholesale = base * WHOLESALE_MULTIPLIER
-  // change this value to tweak the wholesale discount. (0.85 => 15% off)
-  const WHOLESALE_MULTIPLIER = 0.50;
+  const { user } = useUser();
+  const { userType: priceUserType, getPrice } = usePrice();
 
   const optimized = getOptimizedPaths(product.image);
-  const originalSrc =
-    product.image && product.image.startsWith('/')
-      ? product.image
-      : `/${product.image}`;
+  const originalSrc = product.image && product.image.startsWith("/") ? product.image : `/${product.image}`;
 
   const priceOptions = useMemo(() => buildPriceOptions(product.price), [product.price]);
 
-  // apply userType adjustment to a numeric price
-  const adjustPriceForType = (raw) => {
-    const n = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/,/g, ''));
-    if (Number.isFinite(n)) {
-      if (currentUserType === 'wholesale') {
-        return +(n * WHOLESALE_MULTIPLIER);
-      }
-      // retail: show full base price
-      return n;
-    }
-    // non-numeric (string like "N/A"), return original
-    return raw;
-  };
-
-  // Build adjusted options (numeric or kept as string if non-numeric)
-  const priceOptionsAdjusted = useMemo(() => {
-    const out = {};
-    Object.keys(priceOptions).forEach((k) => {
-      const raw = priceOptions[k];
-      const adjusted = adjustPriceForType(raw);
-      out[k] = adjusted;
-    });
-    return out;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [priceOptions, currentUserType]);
-
   const orderedKeys = useMemo(() => {
-    const keys = Object.keys(priceOptionsAdjusted);
-    if (keys.includes('500g') && keys.includes('1kg')) {
-      return ['500g', '1kg'];
+    const keys = Object.keys(priceOptions);
+    if (keys.includes("500g") && keys.includes("1kg")) {
+      return ["500g", "1kg"];
     }
     return keys;
-  }, [priceOptionsAdjusted]);
+  }, [priceOptions]);
 
   const [selectedWeight, setSelectedWeight] = useState(orderedKeys[0]);
 
-  // Match by both _id and selectedWeight
+  // Determine displayed price using PriceContext's getPrice
+  const baseNumeric = parseNumber(priceOptions[selectedWeight]);
+  const displayedPrice = getPrice(baseNumeric, priceUserType);
+
+  // find cart item by id+weight
   const cartItem = cartItems.find(
-    item => item._id === product._id && item.selectedWeight === selectedWeight
+    (item) => item._id === product._id && item.selectedWeight === selectedWeight
   );
 
   const handleAddToCart = () => {
-    const rawPrice = priceOptionsAdjusted[selectedWeight];
-    const finalPrice = (typeof rawPrice === 'number' && Number.isFinite(rawPrice)) ? +rawPrice : rawPrice;
-    const finalProduct = {
+    const base = baseNumeric;
+    const item = {
       ...product,
       selectedWeight,
-      finalPrice,
+      basePrice: base,
+      finalPrice: getPrice(base, priceUserType),
     };
-    addToCart(finalProduct);
+    addToCart(item);
   };
 
   return (
     <div className="product-card">
       <Link to={`/product/${product._id}`} className="product-link">
-        <div className="product-thumb">
+        <div className="product-thumb" style={{ minHeight: 120 }}>
           <LazyImage
             src={optimized ? optimized.primary : originalSrc}
             srcSet={optimized ? optimized.srcSet : undefined}
@@ -153,19 +122,16 @@ const ProductCard = ({ product }) => {
         </div>
 
         <h3>{product.name}</h3>
-        <p>
-          ₹{formatPrice(priceOptionsAdjusted[selectedWeight])} / {selectedWeight}
-        </p>
+        <p>₹{formatPrice(displayedPrice)} / {selectedWeight}</p>
       </Link>
 
-      {/* Weight toggle buttons */}
-      {Object.keys(priceOptionsAdjusted).length > 1 && (
+      {Object.keys(priceOptions).length > 1 && (
         <div className="weight-toggle">
           {orderedKeys.map((w) => (
             <button
               key={w}
               type="button"
-              className={`weight-btn ${selectedWeight === w ? 'active' : ''}`}
+              className={`weight-btn ${selectedWeight === w ? "active" : ""}`}
               onClick={() => setSelectedWeight(w)}
             >
               {w}
@@ -178,18 +144,14 @@ const ProductCard = ({ product }) => {
         <div className="quantity-controls1">
           <button
             className="qty-btn1"
-            onClick={() =>
-              updateQuantity(product._id, selectedWeight, cartItem.quantity - 1)
-            }
+            onClick={() => updateQuantity(product._id, selectedWeight, cartItem.quantity - 1)}
           >
             −
           </button>
           <span>{cartItem.quantity}</span>
           <button
             className="qty-btn1"
-            onClick={() =>
-              updateQuantity(product._id, selectedWeight, cartItem.quantity + 1)
-            }
+            onClick={() => updateQuantity(product._id, selectedWeight, cartItem.quantity + 1)}
           >
             +
           </button>

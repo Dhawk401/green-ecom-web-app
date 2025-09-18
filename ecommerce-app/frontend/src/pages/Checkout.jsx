@@ -4,44 +4,58 @@ import { useCart } from "../context/CartContext";
 import { useOrders } from "../context/OrdersContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/Checkout.css";
+import { useUser } from "../context/UserContext";
+import { usePrice } from "../context/PriceContext"; // use price toggle if present
+
+const CREDIT_LIMITS = {
+  retail: 10000,
+  wholesale: 100000,
+};
 
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
   const { addOrder } = useOrders();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useUser();
+  const { userType: priceUserType } = usePrice();
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    phone: "",
+    firstName: "", lastName: "", email: "", address: "", city: "", state: "", zip: "", phone: "",
   });
 
-  // receive orderType and userType from Cart (if provided)
   const [checkoutMode, setCheckoutMode] = useState("delivery");
-  const [userType, setUserType] = useState("retail");
   const [deliveryError, setDeliveryError] = useState("");
   const [step, setStep] = useState(1);
-
-  // Payment method state
   const [paymentMethod, setPaymentMethod] = useState("gpay");
 
-  // UI: wallet balance (frontend-only)
-  const [walletBalance, setWalletBalance] = useState(0);
+  // walletBalance read from localStorage so it persists across pages
+  const [walletBalance, setWalletBalance] = useState(() => {
+    try {
+      const raw = localStorage.getItem("walletBalance");
+      const n = raw !== null ? Number(raw) : 0;
+      return Number.isFinite(n) ? +n : 0;
+    } catch {
+      return 0;
+    }
+  });
 
   useEffect(() => {
     if (location.state?.orderType) setCheckoutMode(location.state.orderType);
-    if (location.state?.userType) setUserType(location.state.userType);
-
-    const stored = sessionStorage.getItem("walletBalance") || localStorage.getItem("walletBalance");
-    const numeric = stored ? parseFloat(stored) : 0;
-    setWalletBalance(Number.isFinite(numeric) ? numeric : 0);
   }, [location.state]);
+
+  // keep localStorage in-sync when walletBalance changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("walletBalance", String(Number(walletBalance).toFixed(2)));
+    } catch (e) {
+      console.error("Failed to persist wallet balance:", e);
+    }
+  }, [walletBalance]);
+
+  // Determine effective user type (priority: logged-in user -> price toggle -> ui fallback)
+  const effectiveUserType = (user && user.userType) ? user.userType : (priceUserType || localStorage.getItem("ui_userType") || "retail");
+  const creditLimit = CREDIT_LIMITS[effectiveUserType] ?? CREDIT_LIMITS.retail;
 
   const deliveryZipCodes = ["403001", "403002", "403003"];
 
@@ -50,64 +64,41 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (name === "zip" && checkoutMode === "delivery") {
-      if (deliveryZipCodes.includes(value)) {
-        setDeliveryError("");
-      } else if (value.trim() !== "") {
+      if (deliveryZipCodes.includes(value)) setDeliveryError("");
+      else if (value.trim() !== "") {
         setCheckoutMode("takeaway");
         setDeliveryError("Delivery not available in your area. Switched to Takeaway.");
-      } else {
-        setDeliveryError("");
-      }
+      } else setDeliveryError("");
     }
   };
 
   const isFormValid = () => {
     if (checkoutMode === "delivery") {
-      return (
-        formData.firstName.trim() &&
-        formData.lastName.trim() &&
-        formData.email.trim() &&
-        formData.zip.trim() &&
-        formData.address.trim() &&
-        formData.city.trim() &&
-        formData.state.trim() &&
-        formData.phone.trim()
-      );
+      return formData.firstName.trim() && formData.lastName.trim() && formData.email.trim() &&
+             formData.zip.trim() && formData.address.trim() && formData.city.trim() &&
+             formData.state.trim() && formData.phone.trim();
     }
-    return (
-      formData.firstName.trim() &&
-      formData.lastName.trim() &&
-      formData.email.trim() &&
-      formData.zip.trim() &&
-      formData.phone.trim()
-    );
+    return formData.firstName.trim() && formData.lastName.trim() && formData.email.trim() &&
+           formData.zip.trim() && formData.phone.trim();
   };
 
   const toNumber = (v) => {
-    const n = parseFloat(v);
+    const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   };
 
-  // try to prefer finalPrice (product-level) else parse numeric price
   const lineSubtotal = (item) => {
-    const unit = toNumber(item.finalPrice ?? item.price ?? item.unitPrice ?? 0);
-    const qty = Number(item.quantity || 0);
-    return unit * qty;
+    const unit = Number(item.finalPrice ?? item.price) || 0;
+    return unit * (item.quantity || 0);
   };
 
-  const calculateTotal = () =>
-    cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0).toFixed(2);
+  const calculateTotalNumber = () => cartItems.reduce((sum, item) => sum + lineSubtotal(item), 0);
+  const calculateTotal = () => Number(calculateTotalNumber()).toFixed(2);
 
   const handleNext = (e) => {
-    e?.preventDefault?.();
-    if (step === 1) {
-      if (!isFormValid()) return;
-      setStep(2);
-      return;
-    }
-    if (step === 2) {
-      setStep(3);
-    }
+    e.preventDefault();
+    if (step === 1 && isFormValid()) setStep(2);
+    else if (step === 2) setStep(3);
   };
 
   const handlePlaceOrder = () => {
@@ -116,22 +107,49 @@ const Checkout = () => {
       return;
     }
 
+    const numericTotal = calculateTotalNumber();
+    const numericTotalRounded = Number(numericTotal.toFixed(2));
+
+    if (paymentMethod === "balance") {
+      // re-resolve user type (in case it changed) and creditLimit
+      const newType = (user && user.userType) ? user.userType : (priceUserType || localStorage.getItem("ui_userType") || "retail");
+      const creditLimitLocal = CREDIT_LIMITS[newType] ?? CREDIT_LIMITS.retail;
+
+      // compute new balance (can go negative up to -creditLimit)
+      const newBal = +(Number(walletBalance) - numericTotalRounded);
+
+      if (newBal < -creditLimitLocal) {
+        alert(
+          `Insufficient credit. Your credit limit for ${newType} is ₹${creditLimitLocal.toLocaleString()}. ` +
+          `You can spend up to ₹${(Number(walletBalance) + creditLimitLocal).toFixed(2)} more using wallet.`
+        );
+        return;
+      }
+
+      // persist immediately so Wallet and other components see updated balance
+      const persisted = Number(newBal.toFixed(2));
+      try {
+        localStorage.setItem("walletBalance", String(persisted.toFixed(2)));
+      } catch (e) {
+        console.error("Failed to persist walletBalance in checkout:", e);
+      }
+      // update local state to reflect the deduction right away in this view too
+      setWalletBalance(persisted);
+    }
+
     const newOrder = {
       id: Date.now(),
       timestamp: Date.now(),
       date: new Date().toLocaleString(),
       status: "Confirmed",
       mode: checkoutMode,
-      total: `₹${calculateTotal()}`,
+      total: `₹${numericTotalRounded.toFixed(2)}`,
       items: cartItems,
       customer: formData,
-      payment: {
-        method: paymentMethod,
-        timing: "now",
-      },
-      userType: userType || "retail",
+      payment: paymentMethod,
     };
 
+    // Add order after wallet has been persisted
     addOrder(newOrder);
     sessionStorage.setItem("justPlacedOrderId", String(newOrder.id));
     sessionStorage.setItem("justPlacedOrderMode", newOrder.mode);
@@ -143,6 +161,7 @@ const Checkout = () => {
     <div className="checkout-page">
       <h2>Checkout</h2>
 
+      {/* Stepper */}
       <div className="stepper">
         <div className={`step-item ${step > 1 ? "completed" : step === 1 ? "active" : ""}`}>
           <div className="step-circle">1</div>
@@ -152,12 +171,13 @@ const Checkout = () => {
           <div className="step-circle">2</div>
           <p className="step-title">Review</p>
         </div>
-        <div className={`step-item ${step === 3 ? "active" : ""}`}>
+        <div className={`step-item ${step > 3 ? "completed" : step === 3 ? "active" : ""}`}>
           <div className="step-circle">3</div>
           <p className="step-title">Payment</p>
         </div>
       </div>
 
+      {/* Steps (same layout) */}
       {step === 1 && (
         <form className="checkout-form" onSubmit={handleNext}>
           <div className="row">
@@ -196,26 +216,22 @@ const Checkout = () => {
           <h3>Order Summary</h3>
           <ul className="cart-summary-list">
             {cartItems.map((item) => {
-              const unit = lineSubtotal({ ...item, quantity: 1 }); // subtotal per 1 item
+              const unit = Number(item.finalPrice ?? item.price) || 0;
               const qty = item.quantity || 0;
-              const subtotal = (toNumber(unit) * qty).toFixed(2);
+              const subtotal = (unit * qty).toFixed(2);
               return (
                 <li key={item._id || item.id} className="cart-summary-item">
                   {item.image && <img src={item.image} alt={item.name} />}
                   <div>
                     <strong>{item.name}</strong>
-                    <p>
-                      ₹{toNumber(item.finalPrice ?? item.price ?? 0).toFixed(2)} × {qty} = <b>₹{subtotal}</b>
-                    </p>
+                    <p>₹{unit.toFixed(2)} × {qty} = <b>₹{subtotal}</b></p>
                   </div>
                 </li>
               );
             })}
           </ul>
 
-          <p className="total-amount">
-            Total: <strong>₹{calculateTotal()}</strong>
-          </p>
+          <p className="total-amount">Total: <strong>₹{calculateTotal()}</strong></p>
 
           <div className="customer-details">
             <h4>Customer Details</h4>
@@ -267,7 +283,7 @@ const Checkout = () => {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <span>Pay with Balance</span>
                 <small style={{ color: "#666", marginTop: 4 }}>
-                  Wallet Balance: <strong>₹{walletBalance.toFixed(2)}</strong>
+                  Wallet Balance: <strong>₹{Number(walletBalance).toFixed(2)}</strong> • Credit limit: ₹{creditLimit.toLocaleString()}
                 </small>
               </div>
             </label>
@@ -276,6 +292,11 @@ const Checkout = () => {
           <p className="total-amount" style={{ textAlign: "left", marginTop: 8 }}>
             Total: <strong>₹{calculateTotal()}</strong>
           </p>
+
+          <div className="customer-details" style={{ marginTop: "1rem" }}>
+            <h4>Payment</h4>
+            <p>Method: {paymentMethod === "gpay" ? "Google Pay" : paymentMethod === "cod" ? "Cash on Delivery" : "Pay with Balance"}</p>
+          </div>
 
           <div className="review-buttons">
             <button type="button" onClick={() => setStep(2)}>Back</button>

@@ -77,7 +77,7 @@ export const OrdersProvider = ({ children }) => {
     );
   };
 
-  // Helper: parse numeric price from item.finalPrice or item.price (supports "30/kg" style)
+  // Helper: parse numeric price
   const getNumericPrice = (item) => {
     const candidate = item.finalPrice ?? item.price ?? 0;
     if (typeof candidate === "number" && Number.isFinite(candidate)) return candidate;
@@ -91,9 +91,8 @@ export const OrdersProvider = ({ children }) => {
     return 0;
   };
 
-  // Update order items (edit) - now also recalculates order.total
+  // Update order items (edit) - also recalculates order.total
   const updateOrder = (orderId, updatedItems) => {
-    // Normalize items array (ensure quantity present)
     const items = (updatedItems || []).map((it) => ({
       ...it,
       quantity: it.quantity || 1,
@@ -117,7 +116,6 @@ export const OrdersProvider = ({ children }) => {
           : o
       )
     );
-    // keep justPlacedOrderIds as-is (you may change this if desired)
   };
 
   // Cancel (delete) order

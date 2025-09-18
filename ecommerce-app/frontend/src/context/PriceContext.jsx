@@ -1,35 +1,71 @@
 // src/context/PriceContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
-const PriceContext = createContext();
+const PriceContext = createContext({
+  userType: "retail",
+  setUserType: () => {},
+  toggleUserType: () => {},
+  getMultiplier: () => 1,
+  getPrice: () => 0,
+  formatPrice: (v) => String(v),
+});
+
+const PRICE_MULTIPLIERS = {
+  retail: 1.15,   // retail 15% higher (example)
+  wholesale: 1.0, // wholesale baseline
+};
 
 export const PriceProvider = ({ children }) => {
-  const [userType, setUserType] = useState("retail"); // default retail
-
-  // Apply % markup/discount
-  const getPrice = (basePrice) => {
-    if (!basePrice || isNaN(basePrice)) return 0;
-    let price = parseFloat(basePrice);
-
-    // Example: retail is 15% higher
-    if (userType === "retail") {
-      return +(price * 1.15).toFixed(2);
+  // Initialize from localStorage if available so toggle persists across reloads
+  const [userType, setUserTypeState] = useState(() => {
+    try {
+      return localStorage.getItem("price_userType") || "retail";
+    } catch {
+      return "retail";
     }
-    // wholesale = base price
-    return +price.toFixed(2);
-  };
+  });
 
-  const formatPrice = (val) => {
-    if (!val || isNaN(val)) return "0";
-    return Number.isInteger(val) ? val : val.toFixed(2);
-  };
+  useEffect(() => {
+    try {
+      localStorage.setItem("price_userType", userType);
+    } catch {}
+  }, [userType]);
 
-  const toggleUserType = () => {
-    setUserType((prev) => (prev === "retail" ? "wholesale" : "retail"));
-  };
+  const setUserType = useCallback((t) => {
+    setUserTypeState(t === "wholesale" ? "wholesale" : "retail");
+  }, []);
+
+  const toggleUserType = useCallback(() => {
+    setUserTypeState((p) => (p === "retail" ? "wholesale" : "retail"));
+  }, []);
+
+  const getMultiplier = useCallback((type = userType) => {
+    return PRICE_MULTIPLIERS[type] ?? 1;
+  }, [userType]);
+
+  const getPrice = useCallback((basePrice, type = userType) => {
+    const n = Number(basePrice) || 0;
+    return Number((n * getMultiplier(type)).toFixed(2));
+  }, [getMultiplier, userType]);
+
+  const formatPrice = useCallback((val) => {
+    if (val === null || val === undefined) return "0";
+    const n = Number(val);
+    if (Number.isNaN(n)) return String(val);
+    return Number.isInteger(n) ? `${n}` : n.toFixed(2);
+  }, []);
 
   return (
-    <PriceContext.Provider value={{ userType, toggleUserType, getPrice, formatPrice }}>
+    <PriceContext.Provider
+      value={{
+        userType,
+        setUserType,
+        toggleUserType,
+        getMultiplier,
+        getPrice,
+        formatPrice,
+      }}
+    >
       {children}
     </PriceContext.Provider>
   );

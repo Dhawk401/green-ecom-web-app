@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -20,11 +21,13 @@ import CartBar from './components/CartBar';
 import CompleteAccount from './pages/CompleteAccount';
 import AccountDetails from './pages/AccountDetails';
 import PrivateRoute from './components/PrivateRoute';
-import Wallet from './components/Wallet'; // ✅ import wallet component
+import Wallet from './components/Wallet';
 import CheckoutWholesale from './pages/CheckoutWholesale';
+import CheckoutSelector from './components/CheckoutSelector'; // <- new
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Help from './pages/Help';
+
 
 function App() {
   return (
@@ -41,6 +44,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/wallet" element={<Wallet />} />
+        {/* Optional: keep a direct wholesale route for debugging/admin use */}
         <Route path="/checkout-wholesale" element={<CheckoutWholesale />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -57,9 +61,10 @@ function App() {
             <Cart />
           </PrivateRoute>
         } />
+        {/* Use CheckoutSelector so we render the right checkout based on role/toggle */}
         <Route path="/checkout" element={
           <PrivateRoute>
-            <Checkout />
+            <CheckoutSelector />
           </PrivateRoute>
         } />
         <Route path="/profile" element={

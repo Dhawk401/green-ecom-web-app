@@ -1,11 +1,14 @@
 // src/context/CartContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { usePrice } from "./PriceContext";
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
+  const { userType: priceUserType, getMultiplier } = usePrice();
+
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem("cartItems");
@@ -25,6 +28,15 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
+  // --- helpers ---
+  const parseNumber = (v) => {
+    if (typeof v === "number") return v;
+    if (!v && v !== 0) return 0;
+    const m = String(v).match(/([\d,.]+)/);
+    if (!m) return 0;
+    return parseFloat(m[1].replace(/,/g, "")) || 0;
+  };
+
   // Add single product
   const addToCart = (product) => {
     setCartItems((prev) => {
@@ -39,7 +51,10 @@ export const CartProvider = ({ children }) => {
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      // store basePrice on the item so we can recompute finalPrice later
+      const basePrice = parseNumber(product.basePrice ?? product.finalPrice ?? product.price);
+      const finalPrice = Number((basePrice * getMultiplier(priceUserType)).toFixed(2));
+      return [...prev, { ...product, quantity: 1, basePrice, finalPrice }];
     });
   };
 
@@ -53,6 +68,7 @@ export const CartProvider = ({ children }) => {
             item._id === product._id &&
             item.selectedWeight === product.selectedWeight
         );
+        const basePrice = parseNumber(product.basePrice ?? product.finalPrice ?? product.price);
         if (existing) {
           updatedCart = updatedCart.map((item) =>
             item._id === product._id &&
@@ -60,11 +76,17 @@ export const CartProvider = ({ children }) => {
               ? {
                   ...item,
                   quantity: item.quantity + (product.quantity || 1),
+                  // keep basePrice
                 }
               : item
           );
         } else {
-          updatedCart.push({ ...product, quantity: product.quantity || 1 });
+          updatedCart.push({
+            ...product,
+            quantity: product.quantity || 1,
+            basePrice,
+            finalPrice: Number((basePrice * getMultiplier(priceUserType)).toFixed(2)),
+          });
         }
       });
       return updatedCart;
@@ -107,7 +129,28 @@ export const CartProvider = ({ children }) => {
   };
 
   // Total item count for navbar badge
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+  // Recompute finalPrice for all items given a userType (uses PriceContext.getMultiplier)
+  const updatePricesForUserType = useCallback((type) => {
+    setCartItems((prev) => {
+      const multiplier = getMultiplier(type);
+      return prev.map((it) => {
+        const base = parseNumber(it.basePrice ?? it.price ?? it.finalPrice ?? 0);
+        return {
+          ...it,
+          basePrice: base,
+          finalPrice: Number((base * multiplier).toFixed(2)),
+        };
+      });
+    });
+  }, [getMultiplier]);
+
+  // When PriceContext.userType changes, recompute finalPrice automatically
+  useEffect(() => {
+    updatePricesForUserType(priceUserType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceUserType]);
 
   return (
     <CartContext.Provider
@@ -119,6 +162,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         clearCart,
         cartCount,
+        updatePricesForUserType, // exported so components can call it if needed
       }}
     >
       {children}

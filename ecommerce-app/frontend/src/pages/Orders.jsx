@@ -5,7 +5,7 @@ import { useOrders } from "../context/OrdersContext";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 
-// ⭐ Star component
+// Star component
 const Star = ({ filled, onClick }) => (
   <span
     onClick={onClick}
@@ -25,7 +25,6 @@ const Orders = () => {
   const { addMultipleToCart, clearCart } = useCart();
   const navigate = useNavigate();
 
-  // map of orderId -> remaining seconds
   const [timeLeftMap, setTimeLeftMap] = useState({});
   const [showProofModal, setShowProofModal] = useState(false);
   const [activeOrderForProof, setActiveOrderForProof] = useState(null);
@@ -33,7 +32,6 @@ const Orders = () => {
   const [proofUploading, setProofUploading] = useState(false);
   const tickRef = useRef(null);
 
-  // sample products (kept for recommendations)
   const products = [
     { _id: "1", name: "Tomato", image: "/assets/cat-tomato.jpg", price: "30/kg", category: "vegetable" },
     { _id: "2", name: "Potato", image: "/assets/cat-potato.jpg", price: "25/kg", category: "vegetable" },
@@ -44,7 +42,6 @@ const Orders = () => {
 
   const recommended = products ? [...products].sort(() => 0.5 - Math.random()).slice(0, 3) : [];
 
-  // Delivery slot helper
   const getDeliverySlot = (order) => {
     const ts = Number(order.timestamp) || Date.now();
     const orderDate = new Date(ts);
@@ -102,40 +99,33 @@ const Orders = () => {
   };
   const getSavedProof = (orderId) => localStorage.getItem(`paymentProof_${orderId}`) || "";
 
-  // compute remaining seconds for an order (2 minutes window)
   const computeRemainingSeconds = (order) => {
     const orderTime = getOrderPlacedTime(order);
     const elapsed = Date.now() - orderTime;
-    const remainingMs = Math.max(0, 2 * 60 * 1000 - elapsed); // 2 minutes in ms
+    const remainingMs = Math.max(0, 2 * 60 * 1000 - elapsed);
     return Math.floor(remainingMs / 1000);
   };
 
-  // update timeLeftMap every second
   useEffect(() => {
-    // initial fill
     const initialMap = {};
     currentOrders.forEach((o) => {
       initialMap[o.id] = computeRemainingSeconds(o);
     });
     setTimeLeftMap(initialMap);
 
-    // interval tick updates all current orders
     tickRef.current = setInterval(() => {
       setTimeLeftMap((prev) => {
         const next = { ...prev };
-        // update for currentOrders (in case orders array changed)
         currentOrders.forEach((o) => {
           next[o.id] = computeRemainingSeconds(o);
         });
 
-        // remove entries for orders no longer current
         Object.keys(next).forEach((id) => {
           if (!currentOrders.find((o) => String(o.id) === String(id))) {
             delete next[id];
           }
         });
 
-        // After computing next map, check for newly-expired orders that need proof
         if (!showProofModal) {
           for (const o of currentOrders) {
             const rem = next[o.id];
@@ -145,7 +135,7 @@ const Orders = () => {
               if (!alreadyUploaded && status !== "uploaded") {
                 setActiveOrderForProof(o);
                 setShowProofModal(true);
-                break; // show one at a time
+                break;
               }
             }
           }
@@ -161,66 +151,20 @@ const Orders = () => {
         tickRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orders]);
+  }, [orders]); // eslint-disable-line
 
-  // --- file upload handlers (compress before saving) ---
+  // file upload handlers
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result;
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const MAX_WIDTH = 800;
-          let targetWidth = img.width;
-          let targetHeight = img.height;
-
-          if (img.width > MAX_WIDTH) {
-            targetWidth = MAX_WIDTH;
-            targetHeight = Math.round((img.height * MAX_WIDTH) / img.width);
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          const ctx = canvas.getContext("2d");
-
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-          const compressed = canvas.toDataURL("image/jpeg", 0.7);
-
-          console.log("Original size (approx chars):", String(dataUrl).length);
-          console.log("Compressed size (bytes):", Math.round(compressed.length * 3 / 4 / 1024), "KB (approx)");
-
-          setProofPreview(compressed);
-        } catch (err) {
-          console.error("Image compression error:", err);
-          alert("Failed to process image. See console for details.");
-        }
-      };
-      img.onerror = (err) => {
-        console.error("Image load error:", err);
-        alert("Invalid image file.");
-      };
-      img.src = dataUrl;
-    };
-    reader.onerror = (err) => {
-      console.error("FileReader error:", err);
-      alert("Failed to read file. See console for details.");
-    };
+    reader.onload = () => setProofPreview(reader.result.toString());
     reader.readAsDataURL(file);
   };
 
   const handleSubmitProof = () => {
     try {
-      console.log("handleSubmitProof called", { activeOrderForProof, proofPreviewLength: proofPreview?.length || 0 });
-
       if (!activeOrderForProof) {
-        console.warn("No activeOrderForProof");
         alert("No order selected for proof.");
         return;
       }
@@ -234,7 +178,6 @@ const Orders = () => {
       try {
         localStorage.setItem(`paymentProof_${activeOrderForProof.id}`, proofPreview);
         setProofStatus(activeOrderForProof.id, "uploaded");
-        console.log("Saved proof to localStorage for order:", activeOrderForProof.id);
       } catch (err) {
         console.error("Failed to save proof to localStorage:", err);
         alert("Failed to save proof (localStorage). See console for details.");
@@ -242,7 +185,6 @@ const Orders = () => {
         return;
       }
 
-      // close modal and clear preview
       setProofPreview("");
       setActiveOrderForProof(null);
       setShowProofModal(false);
@@ -256,7 +198,6 @@ const Orders = () => {
     }
   };
 
-  // Actions
   const handleReorder = (orderItems) => {
     reorderItems(orderItems);
     navigate("/cart");
@@ -307,7 +248,6 @@ const Orders = () => {
         </div>
       ) : (
         <>
-          {/* ===== Current Orders ===== */}
           {currentOrders.length > 0 && (
             <div className="orders-section">
               <h3 className="section-title">Current Orders</h3>
@@ -352,7 +292,6 @@ const Orders = () => {
 
                         <button className="reorder-btn" onClick={() => handleReorder(order.items)}>↻ Reorder</button>
 
-                        {/* per-order edit/cancel using remaining */}
                         {remaining > 0 && canEditOrder(order.id) && (
                           <>
                             <button className="edit-btn" onClick={() => handleEditOrder(order)}>✏ Edit</button>
@@ -368,7 +307,6 @@ const Orders = () => {
             </div>
           )}
 
-          {/* ===== Previous Orders ===== */}
           {previousOrders.length > 0 && (
             <div className="orders-section">
               <h3 className="section-title">Previous Orders</h3>
